@@ -422,7 +422,7 @@ body.is-locked { overflow: hidden; }
 
 .hero {
   position: relative;
-  min-height: min(100svh, 56rem);
+  min-height: min(100svh, 52rem);
   display: grid; align-items: end;
   padding-top: calc(var(--header-h) + 3rem);
   padding-bottom: clamp(2rem, 5vw, 4rem);
@@ -447,7 +447,10 @@ body.is-locked { overflow: hidden; }
 .hero-kicker .dot {
   width: .5rem; height: .5rem; background: var(--text-2); border-radius: 50%; flex: none;
 }
-.hero h1 { max-width: 22ch; }
+/* Capped below Display 1's ceiling on purpose: at full size the statement
+   pushes the primary action below the fold, and an unseen button is a
+   button that does not exist. */
+.hero h1 { max-width: 22ch; font-size: clamp(2.25rem, 6.6vw, 5.25rem); }
 .hero-lead { max-width: 46ch; color: var(--text-2); }
 
 .hero-foot {
@@ -457,6 +460,7 @@ body.is-locked { overflow: hidden; }
   padding-top: var(--s3); border-top: 1px solid var(--rule);
 }
 .hero-stats { display: flex; flex-wrap: wrap; gap: var(--s4); }
+.hero-foot > .seq { flex: 1 1 100%; }
 .stat { display: grid; gap: .35rem; }
 .stat b {
   font-family: var(--display); font-weight: 900; font-size: clamp(1.75rem, 3.4vw, 2.75rem);
@@ -523,6 +527,17 @@ body.is-locked { overflow: hidden; }
   transition: clip-path var(--t-slow) var(--ease); transition-delay: var(--d);
 }
 [data-reveal='wipe'].in { clip-path: inset(0 0 0 0); }
+
+/* Word reveal. Each word rises out of its own clip, staggered. Used on the
+   one display statement per page, never on body copy: it is expensive to
+   read a paragraph that arrives a word at a time. */
+:where(html.js) [data-reveal='words'] .wd { display: inline-block; overflow: hidden; vertical-align: bottom; }
+:where(html.js) [data-reveal='words'] .wd > i {
+  display: inline-block; font-style: inherit;
+  transform: translateY(105%);
+  transition: transform 1s var(--ease);
+}
+[data-reveal='words'].in .wd > i { transform: none; }
 
 /* Stagger: children animate in sequence. Delay set in CSS, not markup. */
 :where(html.js) [data-stagger] > * {
@@ -636,6 +651,25 @@ html.intro-lock, html.intro-lock body { overflow: hidden; }
 .card img.picto { width: 2.25rem; height: 2.25rem; }
 
 a.card { text-decoration: none; }
+.card-go {
+  margin-top: .4rem;
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--ox);
+  display: inline-flex; align-items: center; gap: .45rem;
+}
+.card-go::after {
+  content: ''; width: .55rem; height: .45rem; flex: none;
+  background: var(--ox);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transition: transform var(--t) var(--ease);
+}
+a.card:hover .card-go::after,
+a.card:focus-visible .card-go::after { transform: translateX(.3rem); }
+.on-ink .card-go { color: var(--paper); }
+.on-ink .card-go::after { background: var(--paper); }
+.card { transition: background var(--t) var(--ease), transform var(--t) var(--ease); }
+.card:hover, .card:focus-within { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) { .card:hover { transform: none; } }
 a.card::after {
   content: ''; position: absolute; inset: 0; z-index: 0;
   background: var(--ox-pale); opacity: 0;
@@ -1152,6 +1186,34 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .stack-cell b { font-size: 1.0625rem; font-weight: 600; line-height: 1.2; }
 .stack-cell p { font-size: var(--small); color: var(--text-2); line-height: 1.45; }
 
+/* ---------- 19b The live specimen -------------------------------- */
+
+.spec {
+  display: grid; gap: 1px; background: var(--rule);
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 62rem) { .spec { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 38rem) { .spec { grid-template-columns: 1fr; } }
+.spec-cell {
+  background: var(--ground); padding: clamp(1rem, 2.2vw, 1.6rem);
+  display: grid; gap: .4rem; align-content: start;
+}
+.spec-cell b {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(1.75rem, 3.6vw, 2.75rem); line-height: 1; letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums;
+}
+.spec-cell > span {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-2);
+}
+.spec-cell small { font-size: var(--small); color: var(--text-2); line-height: 1.45; }
+
+/* Until the browser has reported, the panel says so rather than showing
+   zeros that would read as a claim. */
+#specimen:not([data-live]) .spec-cell b { color: var(--text-2); }
+#specimen[data-unsupported] .spec-cell small { opacity: .6; }
+
 /* ---------- 20 Booking --------------------------------------------- */
 
 .booking-frame {
@@ -1271,6 +1333,53 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   text-transform: uppercase; color: rgba(244, 241, 234, .55);
 }
 .footer-brand img { height: 1.75rem; width: auto; margin-bottom: var(--s2); }
+
+/* ---------- 22b The three-step sequence -------------------------- */
+
+/* Three numbered steps on one line, joined by a rule that draws itself as
+   the block arrives. One idea, read left to right, no scrolling required. */
+.seq {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: var(--gutter);
+  position: relative;
+  padding-top: 2.5rem;
+}
+.seq::before {
+  content: ''; position: absolute; top: .55rem; left: 0; right: 0;
+  height: 1px; background: var(--rule);
+}
+.seq::after {
+  content: ''; position: absolute; top: .55rem; left: 0; right: 0;
+  height: 1px; background: var(--ox);
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform 1.4s var(--ease) .2s;
+}
+.on-ink .seq::after { background: var(--paper); }
+.seq.in::after { transform: scaleX(1); }
+
+.seq-step { position: relative; display: grid; gap: .6rem; align-content: start; }
+.seq-step::before {
+  content: ''; position: absolute; top: -2.5rem; left: 0;
+  width: .6rem; height: .6rem; background: var(--ground);
+  border: 1px solid var(--ox); border-radius: 50%;
+  transform: translateY(.25rem);
+}
+.on-ink .seq-step::before { border-color: var(--paper); }
+.seq-step b {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem); line-height: 1; letter-spacing: -.02em;
+}
+.seq-step .k {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-2);
+}
+.seq-step p { font-size: var(--small); color: var(--text-2); line-height: 1.5; max-width: 34ch; }
+@media (max-width: 52rem) {
+  .seq { grid-template-columns: 1fr; gap: var(--s3); padding-top: 0; }
+  .seq::before, .seq::after { display: none; }
+  .seq-step { border-top: 1px solid var(--rule); padding-top: 1.1rem; }
+  .seq-step::before { display: none; }
+}
 
 /* ---------- 23b The motif veil ------------------------------------ */
 

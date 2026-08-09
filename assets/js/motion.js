@@ -104,6 +104,32 @@
     });
   }
 
+  /* Split a heading into words, each in its own clip, so they can rise in
+     sequence. <br> is kept as a hard break. Runs before the observer so the
+     initial state is set in one pass. */
+  function prepareWords() {
+    $$('[data-reveal="words"]').forEach(function (n) {
+      if ($('.wd', n)) return;
+      var html = n.innerHTML.replace(/<br\s*\/?>/gi, '\n');
+      var tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      var text = tmp.textContent;
+      var out = '';
+      var i = 0;
+      text.split('\n').forEach(function (line, li) {
+        if (li) out += '<br>';
+        line.split(/\s+/).filter(Boolean).forEach(function (word, wi) {
+          out += '<span class="wd"><i>' + word + '</i></span>';
+          if (wi >= 0) out += ' ';
+        });
+      });
+      n.innerHTML = out;
+      $$('.wd > i', n).forEach(function (el, k) {
+        el.style.transitionDelay = (k * 0.055).toFixed(3) + 's';
+      });
+    });
+  }
+
   /* ---------- 02 counters --------------------------------------------- */
 
   function counters() {
@@ -606,6 +632,7 @@
 
   function boot() {
     try { prepareMasks(); } catch (e) {}
+    try { prepareWords(); } catch (e) {}
     try { reveals(); } catch (e) {}
     try { counters(); } catch (e) {}
     try { scramble(); } catch (e) {}

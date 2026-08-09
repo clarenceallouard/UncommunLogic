@@ -393,6 +393,10 @@
       if (fb) fb.hidden = true;
       buildBranches();
       buildChips();
+      /* Open the first branch straight away. A visitor should not have to
+         guess that the left column is clickable, and an empty right column
+         teaches them nothing. */
+      openFamily = Object.keys(DATA.families)[0];
       paintBranches();
       paintTotals();
       renderLeaves();
