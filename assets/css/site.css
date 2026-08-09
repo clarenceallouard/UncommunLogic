@@ -783,14 +783,13 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   padding-block: clamp(4rem, 9vw, 8rem);
   position: relative; overflow: hidden;
 }
-.statement-motif {
-  position: absolute; inset: 0; z-index: 0;
-  background-image: url('/assets/brand/motif-dark-muted.svg');
-  background-size: 30rem auto; background-repeat: repeat;
-  background-position: center top;
-  opacity: .45;
-}
 .statement .wrap { position: relative; z-index: 1; }
+
+/* Big dark bands keep a whisper of the pattern at rest and bring it forward
+   on hover, rather than switching from nothing to something. */
+.statement.veil::before { opacity: .3; }
+.statement.veil:hover::before,
+.statement.veil:focus-within::before { opacity: .7; }
 .statement q { quotes: none; }
 
 /* ---------- 16 Numbers / ROI ---------------------------------------- */
@@ -839,49 +838,194 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   letter-spacing: -.02em; color: var(--text);
 }
 
-.families { display: grid; gap: var(--s5); }
-.family { display: grid; gap: var(--s2); }
-.family-head {
-  display: flex; align-items: baseline; gap: .9rem;
-  border-bottom: 1px solid var(--text); padding-bottom: .6rem;
-}
-.family-head h2 { font-size: var(--h1); font-weight: 600; }
-.family-head .cnt { font-family: var(--mono); font-size: var(--label); letter-spacing: .12em; color: var(--text-2); }
-.family-note { font-size: var(--small); color: var(--text-2); max-width: 62ch; }
+/* The offer, as a tree. Eleven branches from one trunk, and the leaves of
+   one branch at a time so the thing stays readable at seventy-eight items.
+   Real buttons under the drawing, so it works by keyboard and by screen
+   reader; the curves are decoration layered behind them. */
 
-.tiles {
-  display: grid; gap: .5rem;
-  grid-template-columns: repeat(auto-fill, minmax(13.5rem, 1fr));
-  margin-top: var(--s2);
+.tree {
+  display: grid;
+  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+  gap: var(--s4) clamp(3rem, 10vw, 9rem);
+  position: relative;
+  align-items: start;
 }
-.tile {
-  text-align: left; border: 1px solid var(--rule); padding: .85rem .95rem;
-  display: grid; gap: .5rem; align-content: start; min-height: 6.25rem;
+
+.tree-links {
+  position: absolute; inset: 0; z-index: 0;
+  width: 100%; height: 100%;
+  overflow: visible; pointer-events: none;
+}
+.tree-links path {
+  fill: none;
+  stroke: var(--ox);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  opacity: .85;
+}
+.on-ink .tree-links path { stroke: var(--paper); opacity: .5; }
+.tree-links path { transition: stroke-width .3s var(--ease), opacity .3s var(--ease); }
+.tree-links path.hot { stroke-width: 2.4; opacity: 1; }
+
+/* ---- trunk ---- */
+
+.tree-trunk {
+  position: relative; z-index: 1;
+  display: flex; align-items: baseline; gap: .9rem;
+  padding-bottom: .9rem; border-bottom: 1px solid var(--text);
+}
+.tree-trunk b {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(2rem, 4vw, 3rem); line-height: 1; letter-spacing: -.025em;
+}
+.tree-trunk span {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text-2);
+}
+
+/* ---- branches ---- */
+
+.branches { position: relative; z-index: 1; display: grid; }
+
+.branch {
   position: relative; isolation: isolate;
-  transition: border-color var(--t-fast) var(--ease), opacity var(--t) var(--ease),
-              transform var(--t) var(--ease);
+  display: grid; grid-template-columns: 1.35rem minmax(0, 1fr) auto;
+  align-items: center; gap: .85rem;
+  padding: .95rem .9rem .95rem .1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--rule);
+  transition: padding-left var(--t) var(--ease), background var(--t) var(--ease);
 }
-.tile::after {
-  content: ''; position: absolute; inset: 0; z-index: -1;
-  background: var(--ox-pale); opacity: 0; transition: opacity var(--t-fast) var(--ease);
+.branch > * { position: relative; z-index: 1; }
+.branch:hover, .branch:focus-visible { padding-left: .6rem; }
+
+.branch .bg {
+  width: 1.35rem; height: 1rem; flex: none;
+  transition: transform var(--t) var(--ease);
 }
-.tile:hover { border-color: var(--text); }
-.tile:hover::after { opacity: 1; }
-.tile .code { font-family: var(--mono); font-size: .625rem; letter-spacing: .1em; color: var(--text-2); }
-.tile .t { font-weight: 600; font-size: .9375rem; line-height: 1.25; }
-.tile .w {
-  margin-top: auto; display: flex; gap: .3rem; align-items: center;
+.branch .bg .tri { fill: var(--text); transition: fill var(--t) var(--ease); }
+.branch .bg .ring { stroke: var(--g40); transition: stroke var(--t) var(--ease); }
+
+.branch .bt {
+  font-size: 1rem; font-weight: 600; line-height: 1.2;
+  transition: font-variation-settings var(--t) var(--ease);
 }
-.tile .w i {
-  width: .4rem; height: .4rem; background: var(--rule); flex: none;
+.branch .bn {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .1em;
+  color: var(--text-2); font-variant-numeric: tabular-nums;
 }
-.tile[data-size='1'] .w i:nth-child(1),
-.tile[data-size='2'] .w i:nth-child(-n+2),
-.tile[data-size='3'] .w i:nth-child(-n+3) { background: var(--ox); }
-.tile.dim { opacity: .26; }
-.tile.dim:hover { opacity: .5; }
-.tile[aria-expanded='true'] { border-color: var(--ox); }
-.tile[aria-expanded='true']::after { opacity: 1; }
+
+.branch[aria-expanded='true'] { padding-left: .6rem; }
+.branch[aria-expanded='true'] .bg { transform: translateX(.15rem); }
+.branch[aria-expanded='true'] .bg .ring { stroke: var(--ox); }
+.branch[aria-expanded='true'] .bt { color: var(--ox); }
+.on-ink .branch[aria-expanded='true'] .bt { color: var(--paper); }
+.on-ink .branch[aria-expanded='true'] .bg .ring { stroke: var(--paper); }
+
+.branch.dim { opacity: .32; }
+.branch.dim:hover { opacity: .6; }
+
+/* ---- leaves ---- */
+
+.leaves { position: relative; z-index: 1; display: grid; gap: .4rem; align-content: start; }
+
+.leaves-head {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem;
+  padding-bottom: .7rem; margin-bottom: .5rem;
+  border-bottom: 1px solid var(--text);
+}
+.leaves-head h3 {
+  font-family: var(--display); font-weight: 900; text-transform: uppercase;
+  font-size: clamp(1.125rem, 1.8vw, 1.5rem); line-height: 1; letter-spacing: -.015em;
+}
+.leaves-head span {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text-2);
+}
+.leaves-note { font-size: var(--small); color: var(--text-2); max-width: 60ch; margin-bottom: .5rem; }
+
+.leaf {
+  position: relative; isolation: isolate; text-align: left;
+  display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto auto;
+  align-items: center; gap: .9rem;
+  padding: .7rem .8rem;
+  border: 1px solid var(--rule);
+  opacity: 0; transform: translateX(-.9rem);
+  transition: opacity .55s var(--ease), transform .7s var(--ease),
+              border-color var(--t-fast) var(--ease);
+}
+.leaf > * { position: relative; z-index: 1; }
+.leaves.in .leaf { opacity: 1; transform: none; }
+.leaves.in .leaf:nth-child(1)  { transition-delay: .04s; }
+.leaves.in .leaf:nth-child(2)  { transition-delay: .08s; }
+.leaves.in .leaf:nth-child(3)  { transition-delay: .12s; }
+.leaves.in .leaf:nth-child(4)  { transition-delay: .16s; }
+.leaves.in .leaf:nth-child(5)  { transition-delay: .20s; }
+.leaves.in .leaf:nth-child(6)  { transition-delay: .24s; }
+.leaves.in .leaf:nth-child(7)  { transition-delay: .28s; }
+.leaves.in .leaf:nth-child(8)  { transition-delay: .32s; }
+.leaves.in .leaf:nth-child(9)  { transition-delay: .36s; }
+.leaves.in .leaf:nth-child(10) { transition-delay: .40s; }
+.leaves.in .leaf:nth-child(11) { transition-delay: .44s; }
+.leaves.in .leaf:nth-child(12) { transition-delay: .48s; }
+.leaves.in .leaf:nth-child(n+13) { transition-delay: .52s; }
+
+.leaf:hover, .leaf:focus-visible { border-color: var(--text); }
+.leaf .lc {
+  font-family: var(--mono); font-size: .625rem; letter-spacing: .08em;
+  color: var(--text-2);
+}
+.leaf .lt { font-weight: 600; font-size: .9375rem; line-height: 1.25; }
+.leaf .lh {
+  font-family: var(--mono); font-size: .625rem; letter-spacing: .08em;
+  color: var(--text-2); white-space: nowrap;
+}
+.leaf .lw { display: flex; gap: .25rem; }
+.leaf .lw i { width: .35rem; height: .35rem; background: var(--rule); flex: none; }
+.leaf[data-size='1'] .lw i:nth-child(1),
+.leaf[data-size='2'] .lw i:nth-child(-n+2),
+.leaf[data-size='3'] .lw i:nth-child(-n+3) { background: var(--ox); }
+.on-ink .leaf[data-size='1'] .lw i:nth-child(1),
+.on-ink .leaf[data-size='2'] .lw i:nth-child(-n+2),
+.on-ink .leaf[data-size='3'] .lw i:nth-child(-n+3) { background: var(--paper); }
+.leaf.dim { opacity: .3; }
+.leaf[aria-expanded='true'] { border-color: var(--ox); }
+
+.leaf-empty { font-size: var(--small); color: var(--text-2); padding: 1rem 0; }
+
+.tree-col { min-width: 0; }
+
+/* The whole catalogue as plain markup, for crawlers and for anyone without
+   scripting. Hidden by tree.js once the tree is mounted. */
+.fallback-list { margin-top: var(--s4); display: grid; gap: var(--s4); }
+.fallback-family h3 {
+  font-size: var(--h1); font-weight: 600;
+  border-bottom: 1px solid var(--text); padding-bottom: .5rem;
+  display: flex; gap: .75rem; align-items: baseline;
+}
+.fallback-family h3 .mono { font-size: var(--label); color: var(--text-2); letter-spacing: .12em; }
+.fallback-family ul { display: grid; gap: .75rem; margin-top: .9rem; }
+.fallback-family li {
+  padding-bottom: .75rem; border-bottom: 1px solid var(--rule);
+  font-size: var(--small); line-height: 1.5;
+}
+.fallback-family li .mono { font-size: .625rem; letter-spacing: .08em; color: var(--text-2); }
+
+@media (max-width: 64rem) {
+  .tree { grid-template-columns: 1fr; }
+  .tree-links { display: none; }
+  .leaf { grid-template-columns: 4.5rem minmax(0, 1fr) auto; }
+  .leaf .lh { display: none; }
+}
+@media (max-width: 34rem) {
+  .leaf { grid-template-columns: minmax(0, 1fr) auto; }
+  .leaf .lc { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaf { opacity: 1 !important; transform: none !important; }
+  .tree-links { display: none; }
+}
 
 .panel {
   position: fixed; right: 0; top: 0; bottom: 0; z-index: 55;
@@ -931,17 +1075,34 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 
 .people { display: grid; gap: var(--s5); }
 .person {
-  display: grid; grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  display: grid; grid-template-columns: 12rem minmax(0, 1fr);
   gap: var(--s4);
   align-items: start;
+  padding-block: clamp(2rem, 4vw, 3rem);
+  border-top: 1px solid var(--rule);
 }
+.people > .person:last-child { border-bottom: 1px solid var(--rule); }
 @media (max-width: 56rem) { .person { grid-template-columns: 1fr; } }
 
 .portrait {
-  position: relative; aspect-ratio: 4 / 5; background: var(--ink);
-  overflow: hidden;
+  position: relative; aspect-ratio: 1 / 1; background: var(--ink);
+  overflow: hidden; width: 100%; max-width: 12rem;
 }
-.portrait img { width: 100%; height: 100%; object-fit: cover; }
+/* Held in ink monochrome by default and released to colour on hover. It is
+   the brand register, and it is also what lets a low-resolution source sit
+   next to a high-resolution one without the difference shouting. */
+.portrait img {
+  width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%;
+  filter: grayscale(1) contrast(1.12) brightness(1.02);
+  transform: scale(1.02);
+  transition: filter .8s var(--ease), transform 1.2s var(--ease);
+}
+.person:hover .portrait img,
+.person:focus-within .portrait img { filter: none; transform: scale(1.06); }
+@media (prefers-reduced-motion: reduce) {
+  .portrait img { transition: none; transform: none; }
+  .person:hover .portrait img { transform: none; }
+}
 .portrait-fallback {
   position: absolute; inset: 0; display: grid; place-items: center;
   background: var(--ink);
@@ -949,9 +1110,13 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .portrait-fallback svg { width: 46%; height: auto; }
 .portrait figcaption {
   position: absolute; inset-inline: 0; bottom: 0;
-  padding: .6rem .8rem; background: var(--ink); color: var(--paper);
-  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  padding: .5rem .6rem; background: var(--ink); color: var(--paper);
+  font-family: var(--mono); font-size: .625rem; letter-spacing: .12em;
   text-transform: uppercase;
+}
+.portrait-note {
+  margin-top: .6rem; font-family: var(--mono); font-size: .625rem;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--text-2);
 }
 .person-body { display: grid; gap: var(--s3); }
 .person-body h2 { font-size: var(--d3); font-family: var(--display); font-weight: 900;
@@ -1106,6 +1271,44 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   text-transform: uppercase; color: rgba(244, 241, 234, .55);
 }
 .footer-brand img { height: 1.75rem; width: auto; margin-bottom: var(--s2); }
+
+/* ---------- 23b The motif veil ------------------------------------ */
+
+/* The brand pattern surfaces behind the text on hover, then retreats.
+   Brand s09: the pattern always sits behind type and never competes with
+   it, which is why it tops out well under half opacity and why it scales
+   down into place rather than moving. */
+.veil { position: relative; isolation: isolate; }
+.veil::before {
+  content: '';
+  position: absolute; inset: 0; z-index: -1;
+  background-image: url('/assets/brand/motif-light-muted.svg');
+  background-size: 26rem auto;
+  background-repeat: repeat;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.08);
+  transition: opacity .7s var(--ease), transform 1.4s var(--ease);
+  pointer-events: none;
+}
+.veil:hover::before,
+.veil:focus-within::before { opacity: .38; transform: none; }
+
+.on-ink .veil::before,
+.veil.on-ink::before { background-image: url('/assets/brand/motif-dark-muted.svg'); }
+.on-ink .veil:hover::before,
+.on-ink .veil:focus-within::before { opacity: .6; }
+
+/* Bigger surfaces get a bigger tile so the motif does not read as noise. */
+.veil-lg::before { background-size: 40rem auto; }
+
+@media (prefers-reduced-motion: reduce) {
+  .veil::before { transition: none; transform: none; }
+}
+@media (hover: none), (pointer: coarse) {
+  /* No hover to trigger it, so show a whisper of it permanently instead. */
+  .veil::before { opacity: .22; transform: none; }
+}
 
 /* ---------- 24 Misc ---------------------------------------------- */
 

@@ -415,6 +415,43 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeRails);
   }
 
+  /* ---------- 07b parallax ------------------------------------------ */
+
+  /* [data-parallax="0.2"] drifts at a fraction of the scroll, and the hero
+     content fades as it leaves. Transform and opacity only, so it stays on
+     the compositor and never triggers layout. */
+  function parallax() {
+    if (REDUCED) return;
+    var nodes = $$('[data-parallax]');
+    if (!nodes.length) return;
+    var ticking = false;
+
+    function apply() {
+      var y = window.scrollY;
+      var vh = window.innerHeight;
+      nodes.forEach(function (n) {
+        var f = parseFloat(n.getAttribute('data-parallax')) || 0.15;
+        var r = n.getBoundingClientRect();
+        var start = y + r.top;
+        var d = y - start;
+        if (d < -vh || d > vh * 1.5) return;
+        var shift = clamp(d, 0, vh) * f;
+        n.style.transform = 'translate3d(0,' + shift.toFixed(1) + 'px,0)';
+        if (n.hasAttribute('data-parallax-fade')) {
+          n.style.opacity = String(1 - clamp(d / (vh * 0.85), 0, 1) * 0.9);
+        }
+      });
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(apply);
+    }, { passive: true });
+    apply();
+  }
+
   /* ---------- 08 magnetic buttons + reticle -------------------------- */
 
   function pointerCraft() {
@@ -576,6 +613,7 @@
     try { drawer(); } catch (e) {}
     try { lattice(); } catch (e) {}
     try { scrubs(); } catch (e) {}
+    try { parallax(); } catch (e) {}
     try { pointerCraft(); } catch (e) {}
     try { markCurrent(); } catch (e) {}
     try { wireContacts(); } catch (e) {}
