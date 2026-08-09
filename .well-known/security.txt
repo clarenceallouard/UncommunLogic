@@ -1,0 +1,13 @@
+# Uncommun Logic — security contact (RFC 9116)
+# This is a static brochure site. No accounts, no payments, no user data,
+# no server-side code. Report anything you find and we will answer.
+
+Contact: mailto:Clarence.allouard@uncommunlogic.com
+Expires: 2027-08-09T00:00:00.000Z
+Preferred-Languages: en, fr
+Canonical: https://www.uncommunlogic.com/.well-known/security.txt
+
+# Please do not run automated scanners at a rate that degrades the site for
+# others, and do not attempt to access anything belonging to our clients.
+# Testing beyond passive inspection of this site needs written authorisation
+# from us first.

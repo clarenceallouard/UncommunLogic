@@ -1,0 +1,9 @@
+# www.uncommunlogic.com
+# Everything here is public. There is nothing to gate: no accounts, no
+# payments, no user data.
+
+User-agent: *
+Allow: /
+Disallow: /notes/_template.html
+
+Sitemap: https://www.uncommunlogic.com/sitemap.xml
