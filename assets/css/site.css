@@ -395,23 +395,29 @@ em { font-style: normal; font-weight: 600; }
   overflow-y: auto;
 }
 .drawer.is-open { clip-path: inset(0 0 0 0); }
-.drawer a {
+/* Direct children only. As a descendant selector this beat .small on the
+   contact links in the foot, rendering an email address in 31px display
+   type and pushing it 615px off screen. */
+.drawer > a {
   font-family: var(--display); font-weight: 900; text-transform: uppercase;
   font-size: clamp(1.75rem, 8vw, 3rem); line-height: 1.06; letter-spacing: -.015em;
   text-decoration: none; padding-block: .3rem;
   opacity: 0; transform: translateY(1.2rem);
   transition: opacity var(--t) var(--ease), transform var(--t) var(--ease);
 }
-.drawer.is-open a { opacity: 1; transform: none; }
-.drawer.is-open a:nth-child(1) { transition-delay: .10s; }
-.drawer.is-open a:nth-child(2) { transition-delay: .16s; }
-.drawer.is-open a:nth-child(3) { transition-delay: .22s; }
-.drawer.is-open a:nth-child(4) { transition-delay: .28s; }
-.drawer.is-open a:nth-child(5) { transition-delay: .34s; }
-.drawer.is-open a:nth-child(6) { transition-delay: .40s; }
-.drawer.is-open a:nth-child(7) { transition-delay: .46s; }
-.drawer a:hover { color: var(--text-2); }
-.drawer-foot { margin-top: var(--s4); display: grid; gap: .5rem; }
+.drawer.is-open > a { opacity: 1; transform: none; }
+.drawer.is-open > a:nth-child(1) { transition-delay: .10s; }
+.drawer.is-open > a:nth-child(2) { transition-delay: .16s; }
+.drawer.is-open > a:nth-child(3) { transition-delay: .22s; }
+.drawer.is-open > a:nth-child(4) { transition-delay: .28s; }
+.drawer.is-open > a:nth-child(5) { transition-delay: .34s; }
+.drawer.is-open > a:nth-child(6) { transition-delay: .40s; }
+.drawer.is-open > a:nth-child(7) { transition-delay: .46s; }
+.drawer > a:hover { color: var(--text-2); }
+.drawer-foot { margin-top: var(--s4); display: grid; gap: .75rem; justify-items: start; }
+/* An email address is one long unbreakable token. Let it break rather than
+   let it decide the width of the panel. */
+.drawer-foot a { overflow-wrap: anywhere; max-width: 100%; }
 
 @media (max-width: 62rem) {
   .nav { display: none; }
@@ -650,6 +656,36 @@ html.intro-lock, html.intro-lock body { overflow: hidden; }
 }
 .gate-rule .gr-ring { stroke: var(--ox); }
 .on-ink .gate-rule .gr-ring { stroke: var(--text-2); }
+
+/* One gate walks the rule, forever, slowly. The track spans the rule and is
+   what moves; the glyph is pinned to its leading edge and rides along, so a
+   single transform of 100% carries it exactly one rule-width. The rule clips,
+   which both hides the exit and stops the travelling track from reaching the
+   document and producing sideways scroll. */
+.gate-rule { position: relative; overflow: hidden; overflow: clip; }
+.gr-track {
+  position: absolute; left: 0; right: 4.4rem; top: 50%;
+  height: 0; pointer-events: none;
+  animation: gr-travel 19s cubic-bezier(.45, 0, .55, 1) infinite;
+}
+.gr-track::before {
+  content: '';
+  position: absolute; left: 0; top: -.22rem;
+  width: .44rem; height: .44rem;
+  background: var(--ox);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+.on-ink .gr-track::before { background: var(--paper); }
+@keyframes gr-travel {
+  0%   { transform: translateX(0);    opacity: 0; }
+  7%   { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+/* The footer rule carries the same traveller, so every page has one quiet
+   thing still moving at the bottom of it. */
+.footer .gate-rule { margin-bottom: var(--s4); }
 
 .gate-rule .gr-line {
   transform: scaleX(0); transform-origin: 0 50%;
@@ -921,8 +957,26 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 /* Every full-width dark band carries the pattern at rest and brings it
    forward on hover. Scoped to section-level veils so a card sitting inside
    a dark band does not stack a second copy on top of the first. */
+/* A single tile-width of travel, so the loop is seamless, over seventy
+   seconds, which is about six pixels a second. It should read as the surface
+   being alive rather than as something moving. Transform only, so it stays on
+   the compositor, and the layer is oversized so no edge is ever exposed. */
+/* The drifting layer is deliberately larger than its box so no edge is ever
+   exposed mid-travel, which means the box has to clip it. Without this the
+   overflow reached the document and produced 183px of sideways scroll. */
+.statement.veil,
+.section.on-ink.veil { overflow: hidden; overflow: clip; }
 .statement.veil::before,
-.section.on-ink.veil::before { opacity: .3; }
+.section.on-ink.veil::before {
+  opacity: .3;
+  inset: -12%;
+  transform: none;
+  animation: motif-drift 70s linear infinite;
+}
+@keyframes motif-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(calc(var(--tile) * -1), 0, 0); }
+}
 .statement.veil:hover::before,
 .statement.veil:focus-within::before,
 .section.on-ink.veil:hover::before,
@@ -1414,7 +1468,6 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   background: var(--ink); color: var(--paper);
   padding-block: clamp(3rem, 6vw, 5rem) 2rem;
 }
-.footer .rule-art { width: 100%; opacity: .9; margin-bottom: var(--s4); }
 .footer-grid {
   display: grid; gap: var(--s4);
   grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
@@ -1495,12 +1548,12 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
    Brand s09: the pattern always sits behind type and never competes with
    it, which is why it tops out well under half opacity and why it scales
    down into place rather than moving. */
-.veil { position: relative; isolation: isolate; }
+.veil { position: relative; isolation: isolate; --tile: 26rem; }
 .veil::before {
   content: '';
   position: absolute; inset: 0; z-index: -1;
   background-image: url('/assets/brand/motif-light-muted.svg');
-  background-size: 26rem auto;
+  background-size: var(--tile) auto;
   background-repeat: repeat;
   background-position: center;
   opacity: 0;
@@ -1522,7 +1575,7 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .on-ink .veil:focus-within::before { opacity: .55; }
 
 /* Bigger surfaces get a bigger tile so the motif does not read as noise. */
-.veil-lg::before { background-size: 40rem auto; }
+.veil-lg { --tile: 40rem; }
 
 @media (prefers-reduced-motion: reduce) {
   .veil::before { transition: none; transform: none; }
@@ -1659,6 +1712,17 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .drawer, .panel { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
 @media (max-width: 46rem) {
+  /* A 26rem tile on a 390px screen shows about one repeat, so the pattern
+     reads as scattered marks rather than as a pattern. Shrinking the tile
+     turns it back into texture, which is what it is for. */
+  .veil { --tile: 11rem; }
+  .veil-lg { --tile: 14rem; }
+  /* Denser tile means more visual weight for the same opacity, so the
+     resting level comes down with it. */
+  .statement.veil::before,
+  .section.on-ink.veil::before { opacity: .2; }
+  .veil::before { opacity: .2; }
+
   /* Nine filters wrapped onto four rows is a wall. One swipeable row reads
      as a control instead. */
   .filters {
@@ -1714,6 +1778,9 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   [data-reveal='wipe'] { clip-path: none !important; }
   [data-reveal='rule'] { transform: none !important; }
   .gate-rule .gr-line { transform: none !important; }
+  .gr-track { animation: none !important; display: none; }
+  .statement.veil::before,
+  .section.on-ink.veil::before { animation: none !important; inset: 0; }
   .gate-rule .gr-tri, .gate-rule .gr-ring { opacity: 1 !important; transform: none !important; }
   [data-reveal='head'] .label::before { transform: none !important; }
   [data-reveal='head'] .label::after { opacity: 1 !important; transform: none !important; }
