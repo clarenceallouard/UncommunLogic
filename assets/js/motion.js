@@ -88,22 +88,6 @@
     }, 2500);
   }
 
-  /* Wrap each line of a masked heading so it can slide independently.
-     Markup uses <span class="rl"><span>…</span></span> already, but plain
-     headings marked data-reveal="mask" get wrapped here. */
-  function prepareMasks() {
-    $$('[data-reveal="mask"]').forEach(function (n) {
-      if ($('.rl', n)) return;
-      var lines = n.innerHTML.split(/<br\s*\/?>/i);
-      n.innerHTML = lines.map(function (l) {
-        return '<span class="rl"><span>' + l + '</span></span>';
-      }).join('');
-      $$('.rl > span', n).forEach(function (s, i) {
-        s.style.transitionDelay = (i * 0.09) + 's';
-      });
-    });
-  }
-
   /* Split a heading into words, each in its own clip, so they can rise in
      sequence. <br> is kept as a hard break. Runs before the observer so the
      initial state is set in one pass. */
@@ -631,7 +615,6 @@
   /* ---------- boot -------------------------------------------------- */
 
   function boot() {
-    try { prepareMasks(); } catch (e) {}
     try { prepareWords(); } catch (e) {}
     try { reveals(); } catch (e) {}
     try { counters(); } catch (e) {}

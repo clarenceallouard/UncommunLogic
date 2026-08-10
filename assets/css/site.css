@@ -86,7 +86,9 @@
 .on-ink {
   --ground:    var(--ink);
   --text:      var(--paper);
-  --text-2:    rgba(244, 241, 234, .68);
+  /* .78 not .68: measured so secondary text still clears AA when the
+     reinforced motif sits behind it. It also reads better on the bands. */
+  --text-2:    rgba(244, 241, 234, .78);
   --rule:      rgba(244, 241, 234, .18);
   --rule-soft: rgba(244, 241, 234, .10);
   color-scheme: dark;
@@ -102,6 +104,7 @@ html {
 }
 body {
   margin: 0;
+  -webkit-tap-highlight-color: rgba(122, 18, 32, .18);
   background: var(--paper);
   color: var(--ink);
   font-family: var(--sans);
@@ -116,6 +119,8 @@ img, svg, video { display: block; max-width: 100%; height: auto; }
    Without this, any hidden block with a display declaration shows up. */
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+/* Removes the 300ms tap delay without disabling pinch zoom. */
+a, button, .chip, .leaf, .branch, summary { touch-action: manipulation; }
 a { color: inherit; }
 h1, h2, h3, h4, p, ul, ol, figure, blockquote { margin: 0; }
 ul, ol { padding: 0; list-style: none; }
@@ -620,9 +625,101 @@ html.intro-lock, html.intro-lock body { overflow: hidden; }
   transition: transform .9s var(--ease);
 }
 
+/* ---------- 10c The gate device, reused --------------------------- */
+
+/* The intro's closing beat, turned into a component: the triangle sweeps in,
+   the ring lands in the slot the O left, the rule arrives last. Placed
+   between major sections so the page keeps repeating the brand mechanism
+   instead of decorating itself with something else. */
+/* A flexed rule plus a fixed-size mark, rather than one stretched SVG: a
+   stretched viewBox would distort the triangle and the ring, and the ring
+   being a true circle is the whole point of it. */
+.gate-rule {
+  display: flex; align-items: center; gap: .85rem;
+  width: 100%;
+  /* No margin of its own: it sits between two sections that already carry
+     generous padding, and adding to that left a void rather than a rhythm. */
+  margin-block: 0;
+}
+.gate-rule .gr-line {
+  flex: 1 1 auto; display: block; height: 1px; background: var(--rule);
+}
+.gate-rule .gr-mark {
+  flex: none; width: 3.5rem; height: 1.5rem; color: var(--text);
+  overflow: visible;
+}
+.gate-rule .gr-ring { stroke: var(--ox); }
+.on-ink .gate-rule .gr-ring { stroke: var(--text-2); }
+
+.gate-rule .gr-line {
+  transform: scaleX(0); transform-origin: 0 50%;
+}
+.gate-rule .gr-tri {
+  opacity: 0; transform: translateX(-2.5rem);
+}
+.gate-rule .gr-ring {
+  opacity: 0; transform: scale(.35);
+  transform-origin: center;
+  transform-box: fill-box;
+}
+:where(html.js) .gate-rule.in .gr-line {
+  transform: scaleX(1);
+  transition: transform 1.2s var(--ease);
+}
+:where(html.js) .gate-rule.in .gr-tri {
+  opacity: 1; transform: none;
+  transition: opacity .5s var(--ease) .32s, transform .9s var(--ease) .32s;
+}
+:where(html.js) .gate-rule.in .gr-ring {
+  opacity: 1; transform: none;
+  transition: opacity .4s var(--ease) .56s, transform .8s var(--ease) .56s;
+}
+:where(html:not(.js)) .gate-rule .gr-line { transform: none; }
+:where(html:not(.js)) .gate-rule .gr-tri,
+:where(html:not(.js)) .gate-rule .gr-ring { opacity: 1; transform: none; }
+
+/* Section heads get the same gesture in miniature: the rule draws, then the
+   ring lands after the label, the way the mark follows the wordmark. */
+:where(html.js) [data-reveal='head'] .label::before {
+  transform: scaleX(0); transform-origin: 0 50%;
+}
+[data-reveal='head'] .label::before { transition: transform .9s var(--ease); }
+[data-reveal='head'].in .label::before { transform: scaleX(1); }
+
+[data-reveal='head'] .label::after {
+  content: ''; width: .5rem; height: .5rem; flex: none;
+  border: 1px solid var(--ox); border-radius: 50%;
+  margin-left: .1rem;
+}
+.on-ink [data-reveal='head'] .label::after { border-color: var(--text-2); }
+:where(html.js) [data-reveal='head'] .label::after {
+  opacity: 0; transform: scale(.3);
+  transition: opacity .45s var(--ease) .5s, transform .75s var(--ease) .5s;
+}
+[data-reveal='head'].in .label::after { opacity: 1; transform: none; }
+
 /* ---------- 10b Cross-document page transitions --------------------- */
 
 @view-transition { navigation: auto; }
+
+/* The new page wipes up from the bottom, which is the intro's exit gesture
+   run backwards. Chrome and Edge honour this; everywhere else the default
+   cross-fade applies and nothing is lost. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: vt-out .4s cubic-bezier(.16, 1, .3, 1) both;
+  }
+  ::view-transition-new(root) {
+    animation: vt-in .62s cubic-bezier(.16, 1, .3, 1) both;
+  }
+  @keyframes vt-out {
+    to { opacity: 0; transform: translateY(-1.2%); }
+  }
+  @keyframes vt-in {
+    from { clip-path: inset(100% 0 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+  }
+}
 
 /* ---------- 11 Cards ------------------------------------------------- */
 
@@ -821,15 +918,26 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 
 /* Big dark bands keep a whisper of the pattern at rest and bring it forward
    on hover, rather than switching from nothing to something. */
-.statement.veil::before { opacity: .3; }
+/* Every full-width dark band carries the pattern at rest and brings it
+   forward on hover. Scoped to section-level veils so a card sitting inside
+   a dark band does not stack a second copy on top of the first. */
+.statement.veil::before,
+.section.on-ink.veil::before { opacity: .3; }
 .statement.veil:hover::before,
-.statement.veil:focus-within::before { opacity: .7; }
+.statement.veil:focus-within::before,
+.section.on-ink.veil:hover::before,
+.section.on-ink.veil:focus-within::before { opacity: .6; }
 .statement q { quotes: none; }
 
 /* ---------- 16 Numbers / ROI ---------------------------------------- */
 
-.figures { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule); }
-@media (max-width: 62rem) { .figures { grid-template-columns: repeat(2, 1fr); } }
+/* auto-fit, not four fixed tracks: with two children the old rule left two
+   empty cells showing the section background, and squeezed the labels into
+   one-word columns. */
+.figures {
+  display: grid; gap: 1px; background: var(--rule);
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+}
 .figure {
   background: var(--ground); padding: clamp(1.25rem, 2.4vw, 2rem);
   display: grid; gap: .5rem; align-content: start;
@@ -1403,10 +1511,15 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .veil:hover::before,
 .veil:focus-within::before { opacity: .38; transform: none; }
 
+/* Dark surfaces get their own artwork rather than the same file at a higher
+   opacity: the muted dark motif is painted in near-blacks and stays invisible
+   on ink however far you push it. The strong variant swaps those for full
+   oxblood and a low-luminance neutral, so it reads clearly while paper text
+   over it still measures 8.73:1. */
 .on-ink .veil::before,
-.veil.on-ink::before { background-image: url('/assets/brand/motif-dark-muted.svg'); }
+.veil.on-ink::before { background-image: url('/assets/brand/motif-dark-strong.svg'); }
 .on-ink .veil:hover::before,
-.on-ink .veil:focus-within::before { opacity: .6; }
+.on-ink .veil:focus-within::before { opacity: .55; }
 
 /* Bigger surfaces get a bigger tile so the motif does not read as noise. */
 .veil-lg::before { background-size: 40rem auto; }
@@ -1416,7 +1529,10 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 }
 @media (hover: none), (pointer: coarse) {
   /* No hover to trigger it, so show a whisper of it permanently instead. */
-  .veil::before { opacity: .22; transform: none; }
+  .veil::before { opacity: .26; transform: none; }
+  .on-ink .veil::before { opacity: .34; }
+  .statement.veil::before,
+  .section.on-ink.veil::before { opacity: .4; }
 }
 
 /* ---------- 24 Misc ---------------------------------------------- */
@@ -1500,6 +1616,89 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .reticle.grow { width: 3.5rem; height: 3.5rem; margin: -1.75rem 0 0 -1.75rem; }
 @media (hover: none), (pointer: coarse) { .reticle { display: none; } }
 
+/* ---------- 24b Mobile and touch --------------------------------- */
+
+/* Notched phones: keep the fixed chrome and the page edges clear of the
+   rounded corners and the home indicator. */
+@supports (padding: env(safe-area-inset-left)) {
+  .wrap {
+    padding-left: max(var(--margin), env(safe-area-inset-left));
+    padding-right: max(var(--margin), env(safe-area-inset-right));
+  }
+  .drawer {
+    padding-left: max(var(--margin), env(safe-area-inset-left));
+    padding-right: max(var(--margin), env(safe-area-inset-right));
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  }
+  .footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+  .panel { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
+}
+
+/* Anything that gets tapped clears the 44px target the platform guidelines
+   ask for. Keyed on a coarse pointer OR a small viewport: pointer detection
+   is unreliable on hybrid devices, and a narrow screen is being touched
+   often enough that guessing wrong costs more than the extra padding. */
+@media (pointer: coarse), (max-width: 46rem) {
+  .chip { padding: .85rem 1rem; min-height: 2.75rem; display: inline-flex; align-items: center; }
+  .btn { padding: 1.05rem 1.4rem; min-height: 3rem; }
+  .branch { padding-block: 1.15rem; min-height: 3.25rem; }
+  .leaf { padding-block: 1rem; min-height: 3.25rem; }
+  .drawer a { padding-block: .55rem; }
+  .footer a, .contact-list a { display: inline-block; padding-block: .35rem; }
+  .panel-close { padding: .75rem; margin: -.75rem; }
+  /* The logo and the breadcrumb are links too, and both were under the
+     target. Padding grows the hit area without moving the artwork. */
+  .brand { padding-block: .6rem; }
+  .breadcrumb a { display: inline-block; padding-block: .8rem; }
+  .note-row { padding-block: 1.5rem; }
+  /* 16px or iOS zooms the page on focus, which throws the layout. */
+  .brief input[type='text'], .brief textarea, .brief select { font-size: 1rem; }
+}
+
+/* Scrolling containers should not drag the page behind them. */
+.drawer, .panel { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
+@media (max-width: 46rem) {
+  /* Nine filters wrapped onto four rows is a wall. One swipeable row reads
+     as a control instead. */
+  .filters {
+    display: flex; flex-wrap: nowrap;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    margin-inline: calc(var(--margin) * -1);
+    padding-inline: var(--margin);
+    scrollbar-width: none;
+  }
+  .filters::-webkit-scrollbar { display: none; }
+  .filters .chip { flex: none; scroll-snap-align: start; }
+
+  /* A sheet from the bottom is where a thumb already is. */
+  .panel {
+    inset: auto 0 0 0; width: 100%;
+    max-height: 86svh;
+    border-left: 0; border-top: 1px solid rgba(244, 241, 234, .2);
+    padding-top: 1.5rem;
+    transform: translateY(101%);
+  }
+  .panel.is-open { transform: none; }
+  .panel-close { top: 1.25rem; right: 1.25rem; }
+
+  /* One clear action per screen beats two half-width ones. */
+  .cta-row .btn { width: 100%; justify-content: space-between; }
+  .cta-row { gap: .75rem; }
+
+  .hero { min-height: auto; padding-bottom: 2.5rem; }
+  .page-head { padding-block: var(--s3) var(--s4); }
+  .gate-rule { margin-block: 0; }
+  .prose table { font-size: .8125rem; }
+}
+
+/* Short landscape phones: never let the hero eat the whole viewport. */
+@media (max-height: 30rem) and (orientation: landscape) {
+  .hero { min-height: auto; padding-top: calc(var(--header-h) + 1.5rem); }
+  .rail-sticky { height: auto; position: static; }
+}
+
 /* ---------- 25 Reduced motion ----------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1514,6 +1713,10 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   [data-reveal='mask'] .rl > span { transform: none !important; }
   [data-reveal='wipe'] { clip-path: none !important; }
   [data-reveal='rule'] { transform: none !important; }
+  .gate-rule .gr-line { transform: none !important; }
+  .gate-rule .gr-tri, .gate-rule .gr-ring { opacity: 1 !important; transform: none !important; }
+  [data-reveal='head'] .label::before { transform: none !important; }
+  [data-reveal='head'] .label::after { opacity: 1 !important; transform: none !important; }
   /* Without the scroll-driven transform the track would overflow inside a
      clipped sticky box and become unreachable. Lay it out vertically instead,
      exactly as the phone breakpoint does. */
