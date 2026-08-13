@@ -4,6 +4,5 @@
 
 User-agent: *
 Allow: /
-Disallow: /notes/_template.html
 
 Sitemap: https://www.uncommunlogic.com/sitemap.xml

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Disclaimer | Uncommun Logic</title>
-<meta name="description" content="What the figures on this site mean and what they do not: our pricing rule, the catalogue estimates, the worked example, and why we calculate a return rather than guarantee one.">
+<meta name="description" content="What the figures here mean and what they do not: the pricing rule, the calculator and its sources, and why we calculate a return rather than guarantee one.">
 <link rel="canonical" href="https://www.uncommunlogic.com/legal/disclaimer/">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="Uncommun Logic">
 <meta property="og:locale" content="en_AU">
 <meta property="og:title" content="Disclaimer | Uncommun Logic">
-<meta property="og:description" content="What the figures on this site mean and what they do not: our pricing rule, the catalogue estimates, the worked example, and why we calculate a return rather than guarantee one.">
+<meta property="og:description" content="What the figures here mean and what they do not: the pricing rule, the calculator and its sources, and why we calculate a return rather than guarantee one.">
 <meta property="og:url" content="https://www.uncommunlogic.com/legal/disclaimer/">
 <meta property="og:image" content="https://www.uncommunlogic.com/assets/social/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -46,12 +46,18 @@
 
 <div class="progress" aria-hidden="true"><i></i></div>
 
-<div class="reticle" aria-hidden="true">
-  <svg viewBox="0 0 40 40" fill="none">
-    <path d="M11 11 L27 20 L11 29 L14.2 20 Z" fill="#7A1220"/>
-    <circle cx="31" cy="20" r="3.4" stroke="#7A1220" stroke-width="2"/>
-  </svg>
+<!-- The mark rides the whole document, and inverts itself against whatever it
+     is passing over. Desktop only: the phone has the dock instead. -->
+<div class="srail" aria-hidden="true">
+  <i></i>
+  <span class="srail-mark">
+    <svg viewBox="0 0 56 24" focusable="false">
+      <path class="srail-tri" d="M2 4 L26 12 L2 20 L6.6 12 Z" fill="currentColor"/>
+      <circle class="srail-ring" cx="36.5" cy="12" r="5" fill="none" stroke-width="2.6"/>
+    </svg>
+  </span>
 </div>
+
 
 <header class="header">
   <div class="wrap">
@@ -59,28 +65,21 @@
       <img src="/assets/brand/lockup-h.svg" alt="Uncommun Logic" width="1323" height="200">
     </a>
     <nav class="nav" aria-label="Primary">
-      <a href="/solutions/">Automation</a>
-      <a href="/websites/">Websites</a>
+      <a href="/solutions/">What we build</a>
       <a href="/how-we-work/">How we work</a>
-      <a href="/who-we-are/">Who we are</a>
-      <a class="btn" href="/book/"><span>Book the free hour</span><svg class="gate" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M0 0 L16 9 L0 18 L3.2 9 Z" fill="currentColor"/><circle cx="20" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></a>
+      <a class="btn" href="/talk/"><span>Send a brief</span><svg class="gate" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M0 0 L16 9 L0 18 L3.2 9 Z" fill="currentColor"/><circle cx="20" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></a>
     </nav>
     <button class="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Menu"><i></i></button>
   </div>
 </header>
 
 <nav class="drawer on-ink" id="drawer" aria-label="Menu">
-  <a href="/solutions/">Automation</a>
-  <a href="/websites/">Websites</a>
+  <a href="/solutions/">What we build</a>
   <a href="/how-we-work/">How we work</a>
-  <a href="/who-we-are/">Who we are</a>
-  <a href="/technology/">Technology</a>
-  <a href="/notes/">Notes</a>
-  <a href="/book/">Book the free hour</a>
-  <a href="/contact/">Contact</a>
+  <a href="/talk/">Send a brief</a>
   <div class="drawer-foot">
-    <a class="small" data-ul="email" href="#">email</a>
-    <a class="small" data-ul="phone" href="#">phone</a>
+    <a class="small" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a>
+    <a class="small" data-ul="phone" href="tel:+61456810652">+61 456 810 652</a>
   </div>
 </nav>
 
@@ -107,8 +106,8 @@
             <div><dt>Operator</dt><dd>Uncommun Logic</dd></div>
             <div><dt>ABN</dt><dd>[to be advised]</dd></div>
             <div><dt>Registered in</dt><dd>[State of registration to be confirmed], Australia</dd></div>
-            <div><dt>Contact</dt><dd><a class="link" data-ul="email" href="#">email</a></dd></div>
-            <div><dt>Version</dt><dd>1.0, 9 August 2026</dd></div>
+            <div><dt>Contact</dt><dd><a class="link" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a></dd></div>
+            <div><dt>Version</dt><dd>1.1, 14 August 2026</dd></div>
           </dl>
         </div>
 
@@ -128,16 +127,16 @@
 
           <h2>2. Figures on this site</h2>
           <p>Three kinds of number appear here, and they are not the same thing.</p>
-          <p><b>Our pricing rule.</b> &ldquo;Between one week and one month of the return&rdquo;, and the five-to-twenty working day payback that follows from it, describe how we set a price. They are arithmetic applied to a figure we calculate with you. They are not a claim about results anyone has achieved.</p>
+          <p><b>Our pricing rule.</b> &ldquo;Capped at one month of the return&rdquo; describes how we set a price: it is arithmetic applied to a figure we calculate with you, and where a price lands under that ceiling varies with the difficulty of the build. It is not a claim about results anyone has achieved.</p>
           <p><b>Hours-back estimates in the catalogue.</b> Every estimate in the <a href="/solutions/">solutions catalogue</a> is our own estimate of a typical case, made before we have seen your business. They are labelled as estimates because that is what they are. Your figure will be different, and we measure it with you before anything is priced.</p>
-          <p><b>The worked example.</b> The table on the <a href="/how-we-work/">how we work</a> page uses invented figures to show the shape of the calculation. It is not an average, a benchmark, a case study or a promise.</p>
+          <p><b>The calculator on the home page.</b> It multiplies figures you enter by two published ones: average weekly ordinary time earnings for full-time adults from the Australian Bureau of Statistics release of 13 August 2026, and the 25 to 46 per cent range of Australian work activities McKinsey estimated could be automated by 2030 (<i>Australia&rsquo;s automation opportunity</i>, March 2019). Both are cited on the page. The share you set as automatable is an assumption, not a finding about your business, and the result is an order of magnitude for deciding whether to talk to us. It is not an average, a benchmark, a case study or a promise. Nothing you type is transmitted anywhere.</p>
 
           <h2>3. We do not guarantee a financial outcome</h2>
           <p>We calculate a return, we show the arithmetic, and we name every assumption. That is a forecast built on your numbers, and forecasts are wrong in both directions. What we stand behind is the method, the visibility of the working, and the delivery commitments in the signed brief. We do not warrant that any particular saving, revenue increase or return will be achieved, because that depends on how your business behaves after we hand over.</p>
           <p>Any statement on this site about a future matter is made on the basis of information available at the time it was written.</p>
 
           <h2>4. Estimates before a costing are not quotes</h2>
-          <p>The brief builder on the <a href="/contact/">contact page</a> produces an indicative figure from a stated assumption that 60% of the time you tell us about is automatable. That assumption is a rule of thumb whose only purpose is to help you decide whether a conversation is worth an hour. It is not a measurement of your business and it is not a quote.</p>
+          <p>The brief builder on the <a href="/talk/">contact page</a> produces an indicative figure from a stated assumption that 60% of the time you tell us about is automatable. That assumption is a rule of thumb whose only purpose is to help you decide whether a conversation is worth an hour. It is not a measurement of your business and it is not a quote.</p>
 
           <h2>5. Systems that use AI</h2>
           <p>Systems built on large language models produce output that can be wrong, incomplete or out of date, and they can be wrong confidently. Every system we build is designed with a human check at the points where a mistake would matter, and we say in the brief where those points are. Keeping that check in place after handover is the operator's responsibility.</p>
@@ -161,7 +160,7 @@
         <div class="callout veil">
           <p class="label">Questions about this page</p>
           <p>Write to Clarence and you will get an answer from a person, not a template.</p>
-          <div class="cta-row"><a class="btn" data-ul="email" data-ul-keep href="#"><span>Email Clarence</span></a></div>
+          <div class="cta-row"><a class="btn" data-ul="email" data-ul-keep href="mailto:Clarence.allouard@uncommunlogic.com"><span>Email Clarence</span></a></div>
         </div>
         <p class="small note-under">Related: <a class="link" href="/how-we-work/">How we work</a>, <a class="link" href="/legal/terms/">Terms of use</a></p>
       </div>
@@ -189,10 +188,9 @@
       <div>
         <h2>The work</h2>
         <ul>
-          <li><a href="/solutions/">Automation catalogue</a></li>
-          <li><a href="/websites/">Websites and web apps</a></li>
+          <li><a href="/solutions/">What we build</a></li>
           <li><a href="/how-we-work/">How we work</a></li>
-          <li><a href="/technology/">Technology</a></li>
+          <li><a href="/talk/">Send a brief</a></li>
         </ul>
       </div>
       <div>
@@ -200,15 +198,15 @@
         <ul>
           <li><a href="/who-we-are/">Who we are</a></li>
           <li><a href="/notes/">Notes</a></li>
-          <li><a href="/book/">Book the free hour</a></li>
-          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/talk/">Book the free hour</a></li>
+          <li><a href="/talk/">Contact</a></li>
         </ul>
       </div>
       <div>
         <h2>Contact</h2>
         <ul>
-          <li><a data-ul="email" href="#">email</a></li>
-          <li><a data-ul="phone" href="#">phone</a></li>
+          <li><a data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a></li>
+          <li><a data-ul="phone" href="tel:+61456810652">+61 456 810 652</a></li>
         </ul>
         <h2 class="footer-legal-head">Legal</h2>
         <ul>

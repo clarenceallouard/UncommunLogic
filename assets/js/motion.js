@@ -25,15 +25,15 @@
     return function (x) {
       if (x <= 0) return 0;
       if (x >= 1) return 1;
+      /* Newton first, then bisect from its result. The previous version
+         reset t = x and threw the Newton iterations away. */
       var t = x;
       for (var i = 0; i < 8; i++) {
-        var s = slope(t, x1, x2);
-        if (s === 0) break;
-        var e = calc(t, x1, x2) - x;
-        t -= e / s;
+        var sl = slope(t, x1, x2);
+        if (sl === 0) break;
+        t -= (calc(t, x1, x2) - x) / sl;
       }
       var lo = 0, hi = 1;
-      t = x;
       while (lo < hi) {
         var v = calc(t, x1, x2);
         if (Math.abs(v - x) < 1e-5) break;
@@ -89,28 +89,44 @@
   }
 
   /* Split a heading into words, each in its own clip, so they can rise in
-     sequence. <br> is kept as a hard break. Runs before the observer so the
-     initial state is set in one pass. */
+     sequence. <br> is kept as a hard break.
+
+     It used to flatten the heading to textContent, which meant any emphasis
+     inside it was destroyed on the way through. It now walks the children, so
+     a phrase wrapped in <i data-hl> survives: it is kept whole rather than cut
+     into words, because it is one unit of meaning, and it carries a rule that
+     draws under it once the line has landed. */
   function prepareWords() {
     $$('[data-reveal="words"]').forEach(function (n) {
       if ($('.wd', n)) return;
-      var html = n.innerHTML.replace(/<br\s*\/?>/gi, '\n');
-      var tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      var text = tmp.textContent;
-      var out = '';
-      var i = 0;
-      text.split('\n').forEach(function (line, li) {
-        if (li) out += '<br>';
-        line.split(/\s+/).filter(Boolean).forEach(function (word, wi) {
-          out += '<span class="wd"><i>' + word + '</i></span>';
-          if (wi >= 0) out += ' ';
-        });
+      var out = document.createDocumentFragment();
+      var k = 0;
+
+      function word(text, hl) {
+        var w = document.createElement('span');
+        w.className = 'wd' + (hl ? ' is-hl' : '');
+        var i = document.createElement('i');
+        i.textContent = text;
+        i.style.transitionDelay = (k++ * 0.055).toFixed(3) + 's';
+        w.appendChild(i);
+        out.appendChild(w);
+        out.appendChild(document.createTextNode(' '));
+      }
+
+      Array.prototype.slice.call(n.childNodes).forEach(function (node) {
+        if (node.nodeType === 3) {
+          node.textContent.split(/\s+/).forEach(function (t) { if (t) word(t, false); });
+        } else if (node.nodeName === 'BR') {
+          out.appendChild(document.createElement('br'));
+        } else if (node.hasAttribute && node.hasAttribute('data-hl')) {
+          word(node.textContent.replace(/\s+/g, ' ').trim(), true);
+        } else {
+          node.textContent.split(/\s+/).forEach(function (t) { if (t) word(t, false); });
+        }
       });
-      n.innerHTML = out;
-      $$('.wd > i', n).forEach(function (el, k) {
-        el.style.transitionDelay = (k * 0.055).toFixed(3) + 's';
-      });
+
+      n.innerHTML = '';
+      n.appendChild(out);
     });
   }
 
@@ -147,53 +163,48 @@
     nodes.forEach(function (n) { io.observe(n); });
   }
 
-  /* ---------- 03 scramble labels -------------------------------------- */
-
-  function scramble() {
-    if (REDUCED) return;
-    var nodes = $$('[data-scramble]');
-    if (!nodes.length || !('IntersectionObserver' in window)) return;
-    var POOL = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/·';
-
-    function run(el) {
-      var target = el.textContent;
-      var frames = 16;
-      var i = 0;
-      var tick = setInterval(function () {
-        i++;
-        var settled = Math.floor((i / frames) * target.length);
-        var out = '';
-        for (var c = 0; c < target.length; c++) {
-          if (c < settled || target[c] === ' ') out += target[c];
-          else out += POOL[Math.floor(Math.random() * POOL.length)];
-        }
-        el.textContent = out;
-        if (i >= frames) { clearInterval(tick); el.textContent = target; }
-      }, 28);
-    }
-
-    var io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting) return;
-        run(e.target);
-        io.unobserve(e.target);
-      });
-    }, { threshold: 0.8 });
-    nodes.forEach(function (n) { io.observe(n); });
-  }
-
   /* ---------- 04 scroll progress + header ----------------------------- */
 
   function scrollChrome() {
     var bar = $('.progress i');
     var header = $('.header');
+    /* The mark rides the document on a hairline at the right edge: the same
+       progress figure the bar uses, spent on the logo instead of on a bar. */
+    var rail = $('.srail');
     var last = window.scrollY;
     var ticking = false;
+
+    /* The mark has to stay legible over three different surfaces without
+       leaving the palette. Blending arrives at mint green over oxblood, so it
+       asks the document what is underneath it instead: one hit test per
+       scroll frame, on an element that is already pointer-events: none. */
+    var railX = 0, wasDark = null;
+
+    function railSurface() {
+      if (!rail) return;
+      var mark = $('.srail-mark', rail);
+      if (!mark) return;
+      var r = mark.getBoundingClientRect();
+      if (!r.width) return;
+      railX = r.left + r.width / 2;
+      var y = clamp(r.top + r.height / 2, 1, window.innerHeight - 2);
+      var el = document.elementFromPoint(railX, y);
+      var dark = !!(el && el.closest && el.closest('.on-ink, .on-ox'));
+      if (dark === wasDark) return;
+      wasDark = dark;
+      if (dark) rail.setAttribute('data-on', 'dark');
+      else rail.removeAttribute('data-on');
+    }
 
     function apply() {
       var y = window.scrollY;
       var h = document.documentElement.scrollHeight - window.innerHeight;
-      if (bar) bar.style.setProperty('--p', h > 0 ? clamp(y / h, 0, 1) : 0);
+      var p = h > 0 ? clamp(y / h, 0, 1) : 0;
+      if (bar) bar.style.setProperty('--p', p);
+      if (rail) {
+        rail.style.setProperty('--p', p.toFixed(4));
+        railSurface();
+      }
       if (header) {
         header.classList.toggle('is-stuck', y > 8);
         if (!$('.drawer.is-open')) {
@@ -210,7 +221,27 @@
       ticking = true;
       requestAnimationFrame(apply);
     }, { passive: true });
+    /* The document is not at its final height at DOMContentLoaded: the
+       portraits are lazy and the fonts land after first paint, and both change
+       how far there is left to scroll. Recompute when they do, or the rail
+       reports 93% while the visitor is looking at the footer. */
+    window.addEventListener('load', apply);
+    window.addEventListener('resize', apply);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(apply);
     apply();
+
+    /* The ring fills once the footer is on screen: the gate has fired, and the
+       visitor read the page. Asking the footer is the honest question. A
+       fraction of the scroll height is not: the page is not at its final
+       height until the fonts and the portraits have landed, so the same
+       position can read 93% one moment and 100% the next. */
+    var foot = $('.footer');
+    if (rail && foot && 'IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        if (es[0].isIntersecting) rail.setAttribute('data-end', '');
+        else rail.removeAttribute('data-end');
+      }, { threshold: 0.5 }).observe(foot);
+    }
   }
 
   /* ---------- 05 mobile drawer --------------------------------------- */
@@ -222,6 +253,8 @@
 
     function set(open) {
       burger.setAttribute('aria-expanded', String(open));
+      var dm = $('.dock-menu');
+      if (dm) dm.setAttribute('aria-expanded', String(open));
       panel.classList.toggle('is-open', open);
       document.body.classList.toggle('is-locked', open);
       if (open) {
@@ -235,12 +268,28 @@
     burger.addEventListener('click', function () {
       set(burger.getAttribute('aria-expanded') !== 'true');
     });
+
+    /* The bottom dock opens the same drawer. */
+    var dockMenu = $('.dock-menu');
+    if (dockMenu) {
+      dockMenu.addEventListener('click', function () {
+        set(!panel.classList.contains('is-open'));
+      });
+    }
     panel.addEventListener('click', function (e) {
       if (e.target.tagName === 'A') set(false);
     });
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && panel.classList.contains('is-open')) set(false);
     });
+
+    /* BUG: crossing the breakpoint with the drawer open left body scroll
+       locked while both the drawer and the burger became display:none, with
+       no visible way to recover. Close it when the desktop nav takes over. */
+    var wide = window.matchMedia('(min-width: 62.01rem)');
+    var onWide = function (e) { if (e.matches) set(false); };
+    if (wide.addEventListener) wide.addEventListener('change', onWide);
+    else if (wide.addListener) wide.addListener(onWide);
   }
 
   /* ---------- 06 hero lattice ---------------------------------------- */
@@ -251,6 +300,9 @@
   function lattice() {
     var cv = $('.hero-canvas');
     if (!cv || REDUCED) return;
+    /* 17,280 canvas operations a second to react to a pointer that does not
+       exist. One static frame on touch instead. */
+    var COARSE = window.matchMedia('(pointer: coarse)').matches;
     var ctx = cv.getContext('2d', { alpha: true });
     if (!ctx) return;
 
@@ -332,9 +384,45 @@
     }
 
     build();
+    var hero = cv.closest('.hero') || cv.parentNode;
+
+    if (COARSE) {
+      /* One static frame, and then the field answers a finger while it is on
+         the glass. The permanent loop was the right thing to cut on a phone;
+         cutting the interaction with it meant the one effect people actually
+         comment on never existed on the device most of them arrive on. Bounded
+         by the touch itself, so an idle phone still renders nothing. */
+      running = false;
+      frame(performance.now());
+      var stop = null;
+
+      function idle(after) {
+        clearTimeout(stop);
+        stop = setTimeout(function () { running = false; }, after);
+      }
+      function touchAt(e) {
+        var t = e.touches && e.touches[0];
+        if (!t) return;
+        var r = cv.getBoundingClientRect();
+        tpx = t.clientX - r.left;
+        tpy = t.clientY - r.top;
+        if (!running && !document.hidden) {
+          running = true; t0 = performance.now();
+          requestAnimationFrame(frame);
+        }
+        idle(900);
+      }
+      hero.addEventListener('touchstart', touchAt, { passive: true });
+      hero.addEventListener('touchmove', touchAt, { passive: true });
+      hero.addEventListener('touchend', function () {
+        tpx = -9999; tpy = -9999;
+        idle(700);
+      }, { passive: true });
+      return;
+    }
+
     requestAnimationFrame(frame);
 
-    var hero = cv.closest('.hero') || cv.parentNode;
     hero.addEventListener('pointermove', function (e) {
       var r = cv.getBoundingClientRect();
       tpx = e.clientX - r.left;
@@ -365,38 +453,51 @@
 
   /* ---------- 07 scroll-linked scrubs -------------------------------- */
 
-  /* Any [data-scrub] gets --p = 0..1 across its own scroll span.
-     Used by the process rail and the horizontal family rail. */
-  function scrubs() {
-    var nodes = $$('[data-scrub]');
-    var rails = $$('.rail-outer');
-    if (!nodes.length && !rails.length) return;
-    if (REDUCED) return;
+  /* Two kinds of scroll-linked progress, both published as --p on the element
+     so the whole animation can live in CSS as arithmetic.
 
+     [data-scrub]  measures the element's own height. Correct for a tall
+                   pinned block, useless for anything shorter than the
+                   viewport, which is what the horizontal rail used to be.
+     [data-view]   measures the element's travel through the viewport: 0 as
+                   its top reaches 88% of the screen, 1 once it has cleared
+                   the top third. Correct for everything else, which is why
+                   the number module, the extruded mark and the working all
+                   use it.
+
+     Only elements currently near the viewport are measured, so the cost is
+     bounded by what is on screen rather than by the length of the page. */
+  function scrubs() {
+    var own = $$('[data-scrub]');
+    var view = $$('[data-view]');
+    if (!own.length && !view.length) return;
+
+    if (REDUCED) {
+      /* No motion: the end state is the informative one. */
+      view.forEach(function (n) { n.style.setProperty('--p', '1'); });
+      own.forEach(function (n) { n.style.setProperty('--p', '1'); });
+      return;
+    }
+
+    var nodes = own.concat(view);
+    var live = nodes;
     var ticking = false;
 
     function apply() {
       var vh = window.innerHeight;
-
-      nodes.forEach(function (n) {
+      for (var i = 0; i < live.length; i++) {
+        var n = live[i];
         var r = n.getBoundingClientRect();
-        var span = r.height - vh * 0.4;
-        var p = span > 0 ? clamp((vh * 0.6 - r.top) / span, 0, 1) : 0;
-        n.style.setProperty('--p', p);
-      });
-
-      rails.forEach(function (outer) {
-        var track = $('.rail-track', outer);
-        if (!track) return;
-        if (window.innerWidth <= 960) { track.style.transform = ''; return; }
-        var over = track.scrollWidth - window.innerWidth;
-        if (over <= 0) { track.style.transform = ''; return; }
-        var r = outer.getBoundingClientRect();
-        var span = r.height - vh;
-        var p = span > 0 ? clamp(-r.top / span, 0, 1) : 0;
-        track.style.transform = 'translate3d(' + (-over * p) + 'px,0,0)';
-      });
-
+        var p;
+        if (n.hasAttribute('data-scrub')) {
+          var span = r.height - vh * 0.4;
+          p = span > 0 ? clamp((vh * 0.6 - r.top) / span, 0, 1) : 0;
+        } else {
+          var travel = r.height + vh * 0.58;
+          p = clamp((vh * 0.88 - r.top) / travel, 0, 1);
+        }
+        n.style.setProperty('--p', p.toFixed(4));
+      }
       ticking = false;
     }
 
@@ -406,23 +507,97 @@
       requestAnimationFrame(apply);
     }
 
-    /* The rail needs a scroll span proportional to its overflow. */
-    function sizeRails() {
-      rails.forEach(function (outer) {
-        var track = $('.rail-track', outer);
-        if (!track) return;
-        if (window.innerWidth <= 960) { outer.style.height = ''; return; }
-        var over = Math.max(0, track.scrollWidth - window.innerWidth);
-        outer.style.height = (window.innerHeight + over) + 'px';
-      });
-      apply();
+    if ('IntersectionObserver' in window) {
+      live = [];
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) {
+          var k = live.indexOf(e.target);
+          if (e.isIntersecting && k < 0) live.push(e.target);
+          else if (!e.isIntersecting && k >= 0) live.splice(k, 1);
+        });
+        apply();
+      }, { rootMargin: '25% 0px 25% 0px', threshold: 0 });
+      nodes.forEach(function (n) { io.observe(n); });
     }
 
     window.addEventListener('scroll', req, { passive: true });
-    window.addEventListener('resize', function () { sizeRails(); });
-    sizeRails();
-    /* fonts land after first paint and change track width */
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(sizeRails);
+    window.addEventListener('resize', req);
+    apply();
+  }
+
+  /* ---------- 07d the extruded mark ---------------------------------- */
+
+  /* Scroll turns it; the pointer nudges it. Two custom properties, one
+     transform, and a CSS transition doing the smoothing so there is no
+     animation loop running when nobody is moving. Desktop only: the media
+     query that shows it is the same one that decides whether to listen. */
+  function mark3d() {
+    var el = $('.mark3d');
+    if (!el || REDUCED || !FINE) return;
+    if (!window.matchMedia('(min-width: 75rem)').matches) return;
+
+    var host = el.closest('.hero') || document.body;
+    var ticking = false;
+    var mx = 0, my = 0;
+
+    function write() {
+      el.style.setProperty('--mx', mx.toFixed(3));
+      el.style.setProperty('--my', my.toFixed(3));
+      ticking = false;
+    }
+
+    host.addEventListener('pointermove', function (e) {
+      var r = host.getBoundingClientRect();
+      mx = clamp((e.clientX - r.left) / r.width - 0.5, -0.5, 0.5) * 2;
+      my = clamp((e.clientY - r.top) / r.height - 0.5, -0.5, 0.5) * 2;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(write);
+    }, { passive: true });
+
+    host.addEventListener('pointerleave', function () {
+      mx = 0; my = 0;
+      requestAnimationFrame(write);
+    });
+  }
+
+  /* ---------- 07e pointer tilt --------------------------------------- */
+
+  /* Four degrees. Enough to say the surface is a plane in space, not enough
+     to make anyone read a heading at an angle. The listener is attached on
+     enter and removed on leave, so a page of twenty cards costs nothing
+     until one of them is under the pointer. */
+  function tilt() {
+    if (REDUCED || !FINE) return;
+    $$('[data-tilt]').forEach(function (el) {
+      var raf = null, rect = null, x = 0, y = 0;
+
+      function write() {
+        raf = null;
+        el.style.transform =
+          'perspective(52rem) rotateY(' + (x * 4.2).toFixed(2) + 'deg) rotateX(' +
+          (-y * 4.2).toFixed(2) + 'deg)';
+      }
+      function move(e) {
+        if (!rect) return;
+        x = clamp((e.clientX - rect.left) / rect.width - 0.5, -0.5, 0.5) * 2;
+        y = clamp((e.clientY - rect.top) / rect.height - 0.5, -0.5, 0.5) * 2;
+        if (raf) return;
+        raf = requestAnimationFrame(write);
+      }
+      el.addEventListener('pointerenter', function () {
+        rect = el.getBoundingClientRect();
+        el.style.willChange = 'transform';
+        el.addEventListener('pointermove', move, { passive: true });
+      });
+      el.addEventListener('pointerleave', function () {
+        el.removeEventListener('pointermove', move);
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        rect = null;
+        el.style.transform = '';
+        el.style.willChange = '';
+      });
+    });
   }
 
   /* ---------- 07b parallax ------------------------------------------ */
@@ -447,9 +622,8 @@
         if (d < -vh || d > vh * 1.5) return;
         var shift = clamp(d, 0, vh) * f;
         n.style.transform = 'translate3d(0,' + shift.toFixed(1) + 'px,0)';
-        if (n.hasAttribute('data-parallax-fade')) {
-          n.style.opacity = String(1 - clamp(d / (vh * 0.85), 0, 1) * 0.9);
-        }
+        /* The fade used to drop the headline to 10% opacity while it was
+           still on screen, which is deletion rather than restraint. */
       });
       ticking = false;
     }
@@ -464,39 +638,45 @@
 
   /* ---------- 08 magnetic buttons + reticle -------------------------- */
 
-  function pointerCraft() {
-    if (!FINE || REDUCED) return;
+  /* ---------- 07f the motif leans towards the pointer ---------------- */
 
-    $$('.btn').forEach(function (b) {
-      b.addEventListener('pointermove', function (e) {
-        var r = b.getBoundingClientRect();
-        var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
-        var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
-        b.style.transform = 'translate(' + (dx * 5).toFixed(2) + 'px,' + (dy * 4).toFixed(2) + 'px)';
+  /* The one effect on this site people comment on is the field of gates in the
+     header answering the pointer. This gives the same behaviour to every large
+     panel that carries the motif, for the cost of two custom properties and
+     one composited transform. Only panels tall enough for the movement to read
+     are wired, only on a fine pointer, and only while it is inside one. */
+  function veilField() {
+    if (REDUCED || !FINE) return;
+    $$('.veil').forEach(function (el) {
+      var box = el.getBoundingClientRect();
+      if (box.height < 200) return;
+
+      var raf = null, rect = null, x = 0, y = 0;
+
+      function write() {
+        raf = null;
+        el.style.setProperty('--vx', x.toFixed(3));
+        el.style.setProperty('--vy', y.toFixed(3));
+      }
+      function move(e) {
+        if (!rect) return;
+        x = clamp((e.clientX - rect.left) / rect.width - 0.5, -0.5, 0.5) * 2;
+        y = clamp((e.clientY - rect.top) / rect.height - 0.5, -0.5, 0.5) * 2;
+        if (raf) return;
+        raf = requestAnimationFrame(write);
+      }
+      el.addEventListener('pointerenter', function () {
+        rect = el.getBoundingClientRect();
+        el.addEventListener('pointermove', move, { passive: true });
       });
-      b.addEventListener('pointerleave', function () { b.style.transform = ''; });
+      el.addEventListener('pointerleave', function () {
+        el.removeEventListener('pointermove', move);
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+        rect = null;
+        x = 0; y = 0;
+        write();
+      });
     });
-
-    var ret = $('.reticle');
-    if (!ret) return;
-    var x = -100, y = -100, tx = -100, ty = -100, on = false;
-
-    window.addEventListener('pointermove', function (e) {
-      tx = e.clientX; ty = e.clientY;
-      if (!on) { on = true; ret.classList.add('on'); x = tx; y = ty; }
-      var t = e.target;
-      var interactive = t.closest && t.closest('a, button, .tile, input, textarea, select');
-      ret.classList.toggle('grow', !!interactive);
-    }, { passive: true });
-
-    document.addEventListener('pointerleave', function () { on = false; ret.classList.remove('on'); });
-
-    (function loop() {
-      x += (tx - x) * 0.18;
-      y += (ty - y) * 0.18;
-      ret.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
-      requestAnimationFrame(loop);
-    })();
   }
 
   /* ---------- 09 intro: the name device ------------------------------ */
@@ -516,11 +696,25 @@
       setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1100);
     }
 
+    var TOUCH = window.matchMedia('(pointer: coarse)').matches;
     if (REDUCED || sessionStorage.getItem('ul-intro') === '1') {
       el.parentNode.removeChild(el);
       document.documentElement.classList.remove('intro-lock');
       return;
     }
+
+    /* On a phone this used to be 3.2 seconds of locked black screen carrying
+       the instruction "press any key to skip" on a device with no keys, so it
+       was cut entirely. It is back at two thirds the length, it never holds
+       the page, and a touch anywhere ends it. */
+    var K = 1;
+    if (TOUCH) {
+      K = 0.62;
+      document.documentElement.classList.remove('intro-lock');
+      var skip = $('.intro-skip', el);
+      if (skip) skip.textContent = 'Touch to skip';
+    }
+    function at(fn, ms) { setTimeout(fn, Math.round(ms * K)); }
 
     try {
       sessionStorage.setItem('ul-intro', '1');
@@ -531,32 +725,36 @@
       var rule = $('.iv-rule', el);
       var word = $('.iv-word', el);
 
-      /* 0 ms: the word, correctly spelled */
-      setTimeout(function () { word.style.opacity = '1'; }, 60);
-      /* 480 ms: the O leaves */
-      setTimeout(function () {
+      /* the word, correctly spelled */
+      at(function () { word.style.opacity = '1'; }, 40);
+      /* the O leaves */
+      at(function () {
         o.style.transform = 'translateX(1.1em) scale(.42)';
         o.style.opacity = '0';
-      }, 480);
-      /* 620 ms: the ring arrives in its place */
-      setTimeout(function () { ring.style.opacity = '1'; ring.style.transform = 'none'; }, 620);
-      /* 700 ms: the U drops into the slot */
-      setTimeout(function () { u.style.opacity = '1'; u.style.transform = 'none'; }, 700);
-      /* 900 ms: the triangle sweeps in */
-      setTimeout(function () { tri.style.opacity = '1'; tri.style.transform = 'none'; }, 900);
-      /* 1150 ms: the rule lands */
-      setTimeout(function () { rule.style.transform = 'scaleX(1)'; }, 1150);
-      setTimeout(finish, 1950);
+      }, 300);
+      /* the ring arrives in its place */
+      at(function () { ring.style.opacity = '1'; ring.style.transform = 'none'; }, 420);
+      /* the U drops into the slot */
+      at(function () { u.style.opacity = '1'; u.style.transform = 'none'; }, 480);
+      /* the triangle sweeps in */
+      at(function () { tri.style.opacity = '1'; tri.style.transform = 'none'; }, 640);
+      /* the rule lands */
+      at(function () { rule.style.transform = 'scaleX(1)'; }, 820);
+      at(finish, 1450);
     } catch (err) {
       finish();
       return;
     }
 
-    var skip = $('.intro', document);
-    skip.addEventListener('click', finish);
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') finish();
-    }, { once: true });
+    el.addEventListener('click', finish);
+    el.addEventListener('touchstart', finish, { passive: true });
+    function onKey(e) {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') {
+        document.removeEventListener('keydown', onKey);
+        finish();
+      }
+    }
+    document.addEventListener('keydown', onKey);
   }
 
   /* ---------- 10 nav current page ----------------------------------- */
@@ -576,6 +774,11 @@
 
   function wireContacts() {
     var C = window.UL || {};
+    /* BUG: without this guard a missing or malformed config.js rewrote every
+       contact link to mailto:undefined and blanked its text, leaving links
+       with no accessible name. The markup now carries the real details, so
+       this function only ever corrects them. */
+    if (!C.email || !C.phone) return;
     /* Write into the inner span where there is one. Replacing textContent on
        a .btn would delete the span the hover fill sits behind, and the label
        would disappear on hover. */
@@ -618,13 +821,14 @@
     try { prepareWords(); } catch (e) {}
     try { reveals(); } catch (e) {}
     try { counters(); } catch (e) {}
-    try { scramble(); } catch (e) {}
     try { scrollChrome(); } catch (e) {}
     try { drawer(); } catch (e) {}
     try { lattice(); } catch (e) {}
     try { scrubs(); } catch (e) {}
+    try { mark3d(); } catch (e) {}
+    try { tilt(); } catch (e) {}
+    try { veilField(); } catch (e) {}
     try { parallax(); } catch (e) {}
-    try { pointerCraft(); } catch (e) {}
     try { markCurrent(); } catch (e) {}
     try { wireContacts(); } catch (e) {}
     try { portraits(); } catch (e) {}

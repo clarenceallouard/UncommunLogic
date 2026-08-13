@@ -68,17 +68,41 @@
   --maxw: 82.5rem;
   --measure: 70ch;
 
+  /* what a data panel becomes under the pointer */
+  --hi: var(--ox);
+
   /* rhythm */
   --s1: .5rem;  --s2: 1rem;   --s3: 1.5rem;  --s4: 2.5rem;
   --s5: 4rem;   --s6: 6rem;   --s7: 9rem;
 
-  /* motion. One curve, s10. */
+  /* motion. One curve, s10. Four durations, and which one to use is not a
+     matter of taste: anything a visitor triggers themselves has to answer
+     inside 250ms or it reads as lag rather than as motion. Scroll-driven and
+     narrative motion is allowed to take its time. */
   --ease: cubic-bezier(.16, 1, .3, 1);
-  --t-fast: .28s;
-  --t: .6s;
-  --t-slow: 1.1s;
+  --t-press: .12s;   /* a press answering */
+  --t-ui: .2s;       /* hover, focus, toggles: anything they aim at */
+  --t-fast: .28s;    /* small state changes */
+  --t: .6s;          /* reveals */
+  --t-slow: 1.1s;    /* the display statement arriving */
 
   --header-h: 4.5rem;
+}
+
+/* The oxblood surface. Used once per page at most, on the single thing that
+   page most wants said. Paper on oxblood measures 9.56:1, so unlike oxblood
+   on ink it carries type perfectly well. What it cannot carry is more
+   oxblood, so the accent inverts to paper here. */
+.on-ox {
+  --ground:    var(--ox);
+  --text:      var(--paper);
+  --text-2:    rgba(244, 241, 234, .82);
+  --rule:      rgba(244, 241, 234, .26);
+  --rule-soft: rgba(244, 241, 234, .14);
+  --accent:    var(--paper);
+  /* the colour a panel takes when the pointer is on it */
+  --hi:        var(--ink);
+  color-scheme: dark;
 }
 
 /* Dark surfaces. Text becomes paper. Oxblood survives only as a solid
@@ -91,6 +115,7 @@
   --text-2:    rgba(244, 241, 234, .78);
   --rule:      rgba(244, 241, 234, .18);
   --rule-soft: rgba(244, 241, 234, .10);
+  --hi:        var(--ox);
   color-scheme: dark;
 }
 
@@ -133,7 +158,7 @@ table { border-collapse: collapse; width: 100%; }
   outline: 2px solid var(--ox);
   outline-offset: 3px;
 }
-.on-ink :focus-visible { outline-color: var(--paper); }
+.on-ink :focus-visible, .on-ox :focus-visible { outline-color: var(--paper); }
 
 .skip {
   position: absolute; left: -9999px; top: 0; z-index: 999;
@@ -289,17 +314,21 @@ em { font-style: normal; font-weight: 600; }
   color: var(--btn-fg); background: var(--btn-bg);
   border: 1px solid var(--btn-bg);
   overflow: hidden; isolation: isolate;
-  transition: color var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease);
-  will-change: transform;
+  transition: color var(--t-ui) var(--ease), border-color var(--t-ui) var(--ease),
+              transform var(--t-press) var(--ease);
 }
 .btn > span { position: relative; z-index: 1; }
 .btn::after {
   content: ''; position: absolute; inset: 0; z-index: 0;
   background: var(--ox);
   transform: translateY(101%);
-  transition: transform var(--t) var(--ease);
+  transition: transform var(--t-ui) var(--ease);
 }
 .btn:hover::after, .btn:focus-visible::after { transform: translateY(0); }
+
+/* Press feedback. Nothing in the physical world answers a push by staying
+   exactly where it was. Two per cent and 120ms: felt, never noticed. */
+.btn:active { transform: scale(.98); }
 .btn:hover, .btn:focus-visible { color: var(--paper); border-color: var(--ox); }
 
 .btn-accent { --btn-bg: var(--ox); }
@@ -312,11 +341,18 @@ em { font-style: normal; font-weight: 600; }
 .on-ink .btn-ghost:hover, .on-ink .btn-ghost:focus-visible {
   color: var(--ink); border-color: var(--paper);
 }
+/* On oxblood the ghost button fills with paper and its label becomes the
+   band it is sitting on. */
+.on-ox .btn-ghost { border-color: var(--paper); --btn-fg: var(--paper); }
+.on-ox .btn-ghost::after { background: var(--paper); }
+.on-ox .btn-ghost:hover, .on-ox .btn-ghost:focus-visible {
+  color: var(--ox); border-color: var(--paper);
+}
 
 /* The gate glyph that follows every forward action. */
 .btn .gate {
   position: relative; z-index: 1; width: .7rem; height: .55rem; flex: none;
-  transition: transform var(--t) var(--ease);
+  transition: transform var(--t-ui) var(--ease);
 }
 .btn:hover .gate { transform: translateX(.25rem); }
 
@@ -337,11 +373,10 @@ em { font-style: normal; font-weight: 600; }
   position: fixed; inset-inline: 0; top: 0; z-index: 50;
   height: var(--header-h);
   display: flex; align-items: center;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  backdrop-filter: blur(14px) saturate(1.1);
+  background: var(--paper);
   border-bottom: 1px solid transparent;
-  transition: border-color var(--t) var(--ease), background var(--t) var(--ease),
-              transform var(--t) var(--ease);
+  transition: border-color var(--t-ui) var(--ease), background var(--t-ui) var(--ease),
+              transform .34s var(--ease);
 }
 .header.is-stuck { border-bottom-color: var(--g15); }
 .header.is-hidden { transform: translateY(-100%); }
@@ -359,7 +394,7 @@ em { font-style: normal; font-weight: 600; }
 .nav a:not(.btn)::after {
   content: ''; position: absolute; left: 0; bottom: 0; height: 1px; width: 100%;
   background: currentColor; transform: scaleX(0); transform-origin: 0 50%;
-  transition: transform var(--t) var(--ease);
+  transition: transform var(--t-ui) var(--ease);
 }
 .nav a:not(.btn):hover::after,
 .nav a:not(.btn):focus-visible::after { transform: scaleX(1); }
@@ -395,6 +430,12 @@ em { font-style: normal; font-weight: 600; }
   overflow-y: auto;
 }
 .drawer.is-open { clip-path: inset(0 0 0 0); }
+/* BUG: clip-path and transform hide pixels only. A closed drawer kept ten
+   links in the tab order, focused behind the clip, ring drawn then clipped
+   away. visibility removes them from the tab order and the a11y tree. */
+.drawer:not(.is-open) { visibility: hidden; }
+.drawer { transition: clip-path var(--t-slow) var(--ease), visibility 0s linear var(--t-slow); }
+.drawer.is-open { transition: clip-path var(--t-slow) var(--ease), visibility 0s; }
 /* Direct children only. As a descendant selector this beat .small on the
    contact links in the foot, rendering an email address in 31px display
    type and pushing it 615px off screen. */
@@ -429,6 +470,63 @@ em { font-style: normal; font-weight: 600; }
 
 body.is-locked { overflow: hidden; }
 
+/* Everything else that gets pressed, on the same two values. Buttons carry
+   their own transition; these need one adding. */
+.burger, .dock-menu, .dock-cta, .lg-opt, .chip, .lg-more, .lg-chosen {
+  transition: transform var(--t-press) var(--ease), color var(--t-ui) var(--ease),
+              border-color var(--t-ui) var(--ease), background var(--t-ui) var(--ease);
+}
+.burger:active, .dock-menu:active, .dock-cta:active,
+.lg-opt:active, .chip:active, .lg-more:active, .lg-chosen:active {
+  transform: scale(.98);
+}
+/* A full-width bar scaling by 2% looks like it shrank. Half of it, and from
+   the edge it is anchored to. */
+.dock-menu:active, .dock-cta:active { transform: scale(.99); }
+
+/* ---------- 07b The dock ------------------------------------------ */
+
+/* On a phone the header hides on scroll down and the desktop nav is display:
+   none, so for ten to sixteen screens there was nothing to tap and no way to
+   navigate. This is fixed to the bottom, where the thumb is, and it is the
+   only always-available control on the site. */
+.dock { display: none; }
+
+@media (max-width: 62rem) {
+  .dock {
+    position: fixed; inset-inline: 0; bottom: 0; z-index: 48;
+    display: grid; grid-template-columns: auto 1fr;
+    gap: 1px; background: var(--g15);
+    border-top: 1px solid var(--g15);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .dock-menu, .dock-cta {
+    min-height: 3.5rem; display: flex; align-items: center; justify-content: center;
+    gap: .6rem; text-decoration: none;
+    font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+    text-transform: uppercase;
+  }
+  .dock-menu { background: var(--paper); color: var(--ink); padding-inline: 1.2rem; }
+  .dock-cta { background: var(--ox); color: var(--paper); padding-inline: 1.2rem; }
+  .dock-menu span, .dock-cta span { white-space: nowrap; }
+  /* The gate is sized by ".btn .gate". The dock CTA is not a .btn, so without
+     this the SVG expanded to 185px and dragged the bar to 139px tall. */
+  .dock .gate { width: .7rem; height: .55rem; flex: none; }
+  .dock-menu i {
+    position: relative; width: 1rem; height: 1px; background: currentColor;
+  }
+  .dock-menu i::before, .dock-menu i::after {
+    content: ''; position: absolute; left: 0; width: 100%; height: 1px;
+    background: currentColor;
+  }
+  .dock-menu i::before { top: -.28rem; }
+  .dock-menu i::after { top: .28rem; }
+  /* Room so the dock never covers the last line of a page. */
+  body:has(.dock) { padding-bottom: 3.5rem; }
+  /* The drawer covers the dock, so its own close control takes over. */
+  .drawer.is-open ~ .dock { display: none; }
+}
+
 /* ---------- 08 Hero --------------------------------------------------- */
 
 .hero {
@@ -451,6 +549,8 @@ body.is-locked { overflow: hidden; }
     transparent 0%, transparent 40%, #000 82%);
 }
 .hero .wrap { position: relative; z-index: 1; }
+/* Above the extruded mark, which is absolutely placed inside the same wrap. */
+.hero-grid { position: relative; z-index: 1; }
 .hero-grid { display: grid; gap: var(--s4); }
 .hero-kicker { display: flex; align-items: center; gap: .75rem; }
 /* One oxblood event per surface, brand s11. On the hero that event is the
@@ -461,8 +561,19 @@ body.is-locked { overflow: hidden; }
 /* Capped below Display 1's ceiling on purpose: at full size the statement
    pushes the primary action below the fold, and an unseen button is a
    button that does not exist. */
-.hero h1 { max-width: 22ch; font-size: clamp(2.25rem, 6.6vw, 5.25rem); }
+/* At 320px the old 2.25rem floor made "AUTOMATION" 319px wide in a 280px
+   box, and overflow-x:hidden discarded the difference instead of reflowing.
+   WCAG 1.4.10. */
+.hero h1 { max-width: 22ch; font-size: clamp(1.875rem, 6.6vw, 5.25rem); overflow-wrap: break-word; }
+.hero { grid-template-columns: minmax(0, 1fr); }
 .hero-lead { max-width: 46ch; color: var(--text-2); }
+
+/* Above 1200px the extruded mark occupies the right of the hero, so the
+   headline is pulled in to keep clear of it: the two must not touch. */
+@media (min-width: 75rem) {
+  .hero h1 { max-width: 17ch; }
+  .hero-lead { max-width: 40ch; }
+}
 
 .hero-foot {
   margin-top: var(--s4);
@@ -549,6 +660,35 @@ body.is-locked { overflow: hidden; }
   transition: transform 1s var(--ease);
 }
 [data-reveal='words'].in .wd > i { transform: none; }
+
+
+/* An opt-in third dimension for section statements: each word stands up out
+   of the page. Not used on the hero, where it would sit in front of the
+   largest contentful paint. */
+:where(html.js) [data-reveal='words'][data-3d] { perspective: 44rem; }
+:where(html.js) [data-reveal='words'][data-3d] .wd { overflow: visible; }
+:where(html.js) [data-reveal='words'][data-3d] .wd > i {
+  opacity: 0;
+  transform: rotateX(-84deg) translateY(.25em);
+  transform-origin: 50% 100%;
+  transition: transform 1.1s var(--ease), opacity .55s var(--ease);
+}
+[data-reveal='words'][data-3d].in .wd > i { opacity: 1; transform: none; }
+
+/* A phrase inside a statement, kept whole and underscored once the line has
+   landed. Written as <i data-hl> so that a visitor without scripting reads the
+   same sentence, undecorated and un-italic. The rule is the brand's, drawn
+   left to right on the shared curve, and it waits for the words rather than
+   racing them. */
+[data-hl] { font-style: normal; }
+.wd.is-hl { position: relative; }
+:where(html.js) .wd.is-hl::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: .02em;
+  height: .075em; background: currentColor;
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .75s var(--ease);
+}
+[data-reveal='words'].in .wd.is-hl::after { transform: scaleX(1); transition-delay: .8s; }
 
 /* Stagger: children animate in sequence. Delay set in CSS, not markup. */
 :where(html.js) [data-stagger] > * {
@@ -841,10 +981,24 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   font-family: var(--display); font-weight: 900;
   font-size: clamp(2.5rem, 5vw, 4rem); line-height: .85; letter-spacing: -.03em;
   color: var(--text);
-  transition: color var(--t-slow) var(--ease);
+  transition: color var(--t-slow) var(--ease), clip-path .8s var(--ease);
 }
-:where(html.js) .step-n { color: var(--rule); }
-.step.in .step-n { color: var(--text); }
+/* The numeral is printed downwards as the rail reaches it, rather than fading
+   up like everything else on the site. Four steps, four numbers, one gesture
+   that belongs to this page and to nowhere else. */
+:where(html.js) .step-n { color: var(--rule); clip-path: inset(0 0 100% 0); }
+.step.in .step-n { color: var(--text); clip-path: inset(0 0 0 0); }
+
+/* The facts under each step arrive after its numeral, left to right, so the
+   eye reads the number then the terms. */
+:where(html.js) .step-meta span {
+  opacity: 0; transform: translateX(-.5rem);
+  transition: opacity var(--t) var(--ease), transform var(--t) var(--ease);
+}
+.step.in .step-meta span { opacity: 1; transform: none; }
+.step.in .step-meta span:nth-child(1) { transition-delay: .34s; }
+.step.in .step-meta span:nth-child(2) { transition-delay: .42s; }
+.step.in .step-meta span:nth-child(3) { transition-delay: .5s; }
 .step-body { display: grid; gap: var(--s2); max-width: 58ch; }
 .step-meta {
   display: flex; flex-wrap: wrap; gap: 1.25rem;
@@ -855,65 +1009,6 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .step-meta b { color: var(--text); font-weight: 400; }
 @media (max-width: 48rem) {
   .step { grid-template-columns: 1fr; gap: var(--s2); }
-}
-
-/* ---------- 13 Family rail (horizontal on scroll) ------------------- */
-
-.rail-outer { position: relative; }
-/* Flex column, not grid: a grid column would size itself to the full width
-   of the overflowing track and drag the heading off screen with it. */
-.rail-sticky {
-  position: sticky; top: 0; height: 100svh;
-  display: flex; flex-direction: column; justify-content: center;
-  overflow: hidden;
-}
-.rail-track {
-  display: flex; gap: var(--gutter);
-  padding-inline: var(--margin);
-  flex: none; align-self: flex-start;
-  will-change: transform;
-}
-.rail-card {
-  flex: 0 0 clamp(16rem, 24vw, 20rem);
-  border: 1px solid var(--rule);
-  padding: var(--s3);
-  display: flex; flex-direction: column; gap: .75rem;
-  min-height: 16rem;
-}
-.rail-card .n { font-family: var(--mono); font-size: var(--label); letter-spacing: .14em; color: var(--text-2); }
-.rail-card h3 { font-size: var(--h1); font-weight: 600; line-height: 1.25; }
-.rail-card p { font-size: var(--small); color: var(--text-2); }
-.rail-card .c {
-  margin-top: auto; font-family: var(--display); font-weight: 900;
-  font-size: 2rem; line-height: 1; letter-spacing: -.02em;
-}
-.rail-head {
-  padding-inline: var(--margin);
-  margin-bottom: var(--s4);
-  max-width: var(--maxw); margin-inline: auto; width: 100%;
-}
-.rail-head .shead { margin-bottom: 0; }
-
-
-/* On a phone the hero text block is tall and narrow, so the elliptical mask
-   no longer clears it. Fade the pattern out from the top instead. */
-@media (max-width: 48rem) {
-  .hero-canvas {
-    mask-image: linear-gradient(to bottom, transparent 0%, transparent 62%, #000 100%);
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 62%, #000 100%);
-  }
-}
-
-@media (max-width: 60rem) {
-  .rail-sticky { position: static; height: auto; padding-block: var(--s5); }
-  .rail-track {
-    transform: none !important;
-    display: grid; grid-template-columns: 1fr; gap: 1px; background: var(--rule);
-    padding-inline: 0;
-  }
-  .rail-card { border: 0; background: var(--ground); min-height: 0; }
-  .rail-outer { height: auto !important; }
-  .rail-head { padding-inline: var(--margin); }
 }
 
 /* ---------- 14 Marquee --------------------------------------------- */
@@ -946,7 +1041,7 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 /* ---------- 15 Pull quote / statement ------------------------------ */
 
 .statement {
-  background: var(--ink); color: var(--paper);
+  background: var(--ground); color: var(--text);
   padding-block: clamp(4rem, 9vw, 8rem);
   position: relative; overflow: hidden;
 }
@@ -973,9 +1068,16 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   transform: none;
   animation: motif-drift 70s linear infinite;
 }
+/* The drift carries the pointer offset inside its own keyframes. The two
+   effects would otherwise fight: an animation beats a transition, so the
+   pointer lean applied to the same pseudo-element was being discarded on
+   exactly the panels where it matters most. Both live here now, and because
+   --vx and --vy are read at each frame the field follows the pointer directly
+   rather than trailing it. */
 @keyframes motif-drift {
-  from { transform: translate3d(0, 0, 0); }
-  to   { transform: translate3d(calc(var(--tile) * -1), 0, 0); }
+  from { transform: translate3d(calc(var(--vx) * 16px), calc(var(--vy) * 16px), 0); }
+  to   { transform: translate3d(calc(var(--tile) * -1 + var(--vx) * 16px),
+                                calc(var(--vy) * 16px), 0); }
 }
 .statement.veil:hover::before,
 .statement.veil:focus-within::before,
@@ -991,10 +1093,22 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .figures {
   display: grid; gap: 1px; background: var(--rule);
   grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  /* Fills the column beside the statement rather than floating at the top of
+     it: two figures 160px tall next to a 600px headline read as an
+     afterthought. The numbers still sit at the top of their own cells. */
+  height: 100%;
 }
 .figure {
   background: var(--ground); padding: clamp(1.25rem, 2.4vw, 2rem);
   display: grid; gap: .5rem; align-content: start;
+  transition: background var(--t-ui) var(--ease), color var(--t-ui) var(--ease);
+}
+/* The panel you are pointing at takes the other colour: oxblood on a dark
+   band, ink on the oxblood one. It replaces the second copy of the motif that
+   used to live here, which was a pattern fighting the pattern behind it. */
+@media (hover: hover) and (pointer: fine) {
+  .figure:hover { background: var(--hi); color: var(--paper); }
+  .figure:hover > span, .figure:hover small { color: rgba(244, 241, 234, .82); }
 }
 .figure b {
   font-family: var(--display); font-weight: 900;
@@ -1003,6 +1117,26 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .figure > span { font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
   text-transform: uppercase; color: var(--text-2); }
 .figure small { font-size: var(--small); color: var(--text-2); line-height: 1.4; }
+
+/* The price band reads as a ceiling, so it is built as one: the rule is drawn
+   across the top of each figure and the numeral rises until it meets it and
+   stops. Nothing overshoots, which is the point of the rule it is hitting. */
+.on-ox .figure { position: relative; overflow: hidden; }
+.on-ox .figure::before {
+  content: ''; position: absolute; inset-inline: 0; top: 0; height: 2px;
+  background: var(--paper);
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .8s var(--ease);
+}
+:where(html.js) .on-ox .figure b { display: block; transform: translateY(115%); }
+.on-ox .figure b { transition: transform .9s var(--ease) .25s; }
+.on-ox .figures.in .figure::before { transform: scaleX(1); }
+.on-ox .figures.in .figure b { transform: none; }
+.on-ox .figures.in .figure:nth-child(2)::before { transition-delay: .14s; }
+.on-ox .figures.in .figure:nth-child(2) b { transition-delay: .39s; }
+/* The label under a rising numeral waits for it. */
+:where(html.js) .on-ox .figure > span { opacity: 0; transition: opacity var(--t) var(--ease) .6s; }
+.on-ox .figures.in .figure > span { opacity: 1; }
 
 /* ---------- 17 Solutions catalogue ---------------------------------- */
 
@@ -1034,165 +1168,519 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   letter-spacing: -.02em; color: var(--text);
 }
 
-/* The offer, as a tree. Eleven branches from one trunk, and the leaves of
-   one branch at a time so the thing stays readable at seventy-eight items.
-   Real buttons under the drawing, so it works by keyboard and by screen
-   reader; the curves are decoration layered behind them. */
+/* ---------- 16b The number --------------------------------------- */
 
-.tree {
-  display: grid;
-  grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
-  gap: var(--s4) clamp(3rem, 10vw, 9rem);
-  position: relative;
-  align-items: start;
+/* The site used to demonstrate one invoice being read. It was the wrong
+   argument: a visitor does not need to watch a robot type, they need to know
+   what the hour is worth. This is the same mechanism turned on the visitor's
+   own figures. Two published sources, three inputs they control, and every
+   step of the arithmetic printed underneath. Nothing here is an image. */
+
+.calc { --p: 0; display: grid; gap: clamp(1.25rem, 3vw, 2rem); }
+@media (min-width: 62rem) {
+  /* Stretch, not start: the two boxes are a pair and a short one beside a
+     tall one left a void under the figure. */
+  .calc { grid-template-columns: minmax(0, 1.02fr) minmax(0, 1fr); align-items: stretch; }
 }
 
-.tree-links {
-  position: absolute; inset: 0; z-index: 0;
-  width: 100%; height: 100%;
-  overflow: visible; pointer-events: none;
-}
-.tree-links path {
-  fill: none;
-  stroke: var(--ox);
-  stroke-width: 1.25;
-  stroke-linecap: round;
-  opacity: .85;
-}
-.on-ink .tree-links path { stroke: var(--paper); opacity: .5; }
-.tree-links path { transition: stroke-width .3s var(--ease), opacity .3s var(--ease); }
-.tree-links path.hot { stroke-width: 2.4; opacity: 1; }
+/* ---- the result ---- */
 
-/* ---- trunk ---- */
-
-.tree-trunk {
-  position: relative; z-index: 1;
-  display: flex; align-items: baseline; gap: .9rem;
-  padding-bottom: .9rem; border-bottom: 1px solid var(--text);
+.calc-out {
+  border: 1px solid var(--ox);
+  padding: clamp(1.1rem, 3vw, 2rem);
+  display: grid; gap: .8rem; align-content: start;
 }
-.tree-trunk b {
+.calc-out .label { color: var(--ox); }
+.on-ink .calc-out { border-color: var(--rule); }
+.on-ink .calc-out .label { color: var(--text-2); }
+
+.calc-figure {
   font-family: var(--display); font-weight: 900;
-  font-size: clamp(2rem, 4vw, 3rem); line-height: 1; letter-spacing: -.025em;
+  font-size: clamp(2.25rem, 8.4vw, 4.5rem); line-height: 1;
+  letter-spacing: -.035em;
+  display: flex; align-items: center; min-height: 1.1em;
 }
-.tree-trunk span {
+.calc-sub {
+  font-family: var(--mono); font-size: var(--small); color: var(--text-2);
+  line-height: 1.7;
+}
+.calc-sub b { color: var(--text); font-weight: 400; }
+
+/* The ring reads the payback, not the money: full circle at one month. */
+.calc-ring { display: flex; align-items: center; gap: .9rem; }
+.calc-ring svg { width: 3rem; height: 3rem; flex: none; color: var(--ox); }
+.on-ink .calc-ring svg { color: var(--text); }
+.calc-arc { transition: stroke-dashoffset .8s var(--ease); }
+.calc-ring p { font-family: var(--mono); font-size: var(--label);
+  letter-spacing: .12em; text-transform: uppercase; color: var(--text-2); }
+
+/* ---- the odometer ---- */
+
+/* One ten-sided drum per digit, turned on X. The cell clips, so only the face
+   at the front is legible and its neighbours are caught mid-turn at the top
+   and bottom edges, which is what makes it read as a solid object rather than
+   as text being replaced.
+
+   The drum is pushed back by exactly its own radius, so the front face lands
+   at z = 0 and the perspective does not enlarge it past the dollar sign
+   standing beside it. Radius for a ten-sided prism of side h is
+   h / (2 tan 18deg) = 1.539h, and here h is one em.
+
+   It always rolls forward: from 9 the drum climbs to 10 rather than winding
+   back to 0. */
+.odo { display: inline-flex; align-items: center; }
+.odo-c { display: inline-block; }
+.odo-d {
+  position: relative; display: inline-block;
+  width: 1ch; height: 1em;
+  overflow: hidden;
+  perspective: 9em;
+}
+.odo-r {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+  transform: translateZ(-1.539em) rotateX(calc(var(--n, 0) * 36deg));
+  /* Short on purpose. At a second the digits are unreadable soup for the whole
+     drag, and a number nobody can read while they are changing it is worse
+     than no animation. */
+  transition: transform .45s var(--ease);
+}
+.odo-r > i {
+  position: absolute; inset: 0;
+  display: grid; place-items: center;
+  font-style: normal; backface-visibility: hidden;
+}
+.odo-r > i:nth-child(1)  { transform: rotateX(0deg)    translateZ(1.539em); }
+.odo-r > i:nth-child(2)  { transform: rotateX(-36deg)  translateZ(1.539em); }
+.odo-r > i:nth-child(3)  { transform: rotateX(-72deg)  translateZ(1.539em); }
+.odo-r > i:nth-child(4)  { transform: rotateX(-108deg) translateZ(1.539em); }
+.odo-r > i:nth-child(5)  { transform: rotateX(-144deg) translateZ(1.539em); }
+.odo-r > i:nth-child(6)  { transform: rotateX(-180deg) translateZ(1.539em); }
+.odo-r > i:nth-child(7)  { transform: rotateX(-216deg) translateZ(1.539em); }
+.odo-r > i:nth-child(8)  { transform: rotateX(-252deg) translateZ(1.539em); }
+.odo-r > i:nth-child(9)  { transform: rotateX(-288deg) translateZ(1.539em); }
+.odo-r > i:nth-child(10) { transform: rotateX(-324deg) translateZ(1.539em); }
+
+/* ---- the three inputs ---- */
+
+.calc-in {
+  display: grid; gap: 1px; background: var(--rule);
+  border: 1px solid var(--rule);
+}
+/* Without scripting the sliders would move and change nothing, which is worse
+   than not offering them. The result, the working and the sources are all
+   static text and stay. */
+html:not(.js) .calc-in { display: none; }
+.calc-row {
+  background: var(--ground); padding: clamp(.8rem, 2vw, 1.1rem);
+  display: grid; gap: .35rem;
+}
+.calc-row .k {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem;
   font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
   text-transform: uppercase; color: var(--text-2);
 }
-
-/* ---- branches ---- */
-
-.branches { position: relative; z-index: 1; display: grid; }
-
-.branch {
-  position: relative; isolation: isolate;
-  display: grid; grid-template-columns: 1.35rem minmax(0, 1fr) auto;
-  align-items: center; gap: .85rem;
-  padding: .95rem .9rem .95rem .1rem;
-  text-align: left;
-  border-bottom: 1px solid var(--rule);
-  transition: padding-left var(--t) var(--ease), background var(--t) var(--ease);
+.calc-row .v {
+  font-family: var(--display); font-weight: 900; font-size: 1.125rem;
+  letter-spacing: -.02em; color: var(--text); white-space: nowrap;
 }
-.branch > * { position: relative; z-index: 1; }
-.branch:hover, .branch:focus-visible { padding-left: .6rem; }
+.calc-row .n { font-size: var(--small); color: var(--text-2); line-height: 1.5; }
 
-.branch .bg {
-  width: 1.35rem; height: 1rem; flex: none;
-  transition: transform var(--t) var(--ease);
+/* A native range: it already knows about keyboards, screen readers and
+   fingers. Only the two parts a browser lets us touch are restyled, and the
+   thumb is the mark rather than a circle. */
+.calc-range {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 2.75rem; margin: 0;
+  background: transparent; cursor: ew-resize;
 }
-.branch .bg .tri { fill: var(--text); transition: fill var(--t) var(--ease); }
-.branch .bg .ring { stroke: var(--g40); transition: stroke var(--t) var(--ease); }
-
-.branch .bt {
-  font-size: 1rem; font-weight: 600; line-height: 1.2;
-  transition: font-variation-settings var(--t) var(--ease);
+.calc-range::-webkit-slider-runnable-track {
+  height: 1px; background: var(--rule);
 }
-.branch .bn {
-  font-family: var(--mono); font-size: var(--label); letter-spacing: .1em;
-  color: var(--text-2); font-variant-numeric: tabular-nums;
+.calc-range::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 1.6rem; height: 1.15rem; margin-top: -.575rem;
+  background: var(--ox); border: 0;
+  clip-path: polygon(0 0, 100% 50%, 0 100%, 21% 50%);
+}
+.calc-range::-moz-range-track { height: 1px; background: var(--rule); }
+.calc-range::-moz-range-thumb {
+  width: 1.6rem; height: 1.15rem; border: 0; border-radius: 0;
+  background: var(--ox);
+  clip-path: polygon(0 0, 100% 50%, 0 100%, 21% 50%);
+}
+.on-ink .calc-range::-webkit-slider-thumb { background: var(--paper); }
+.on-ink .calc-range::-moz-range-thumb { background: var(--paper); }
+.calc-range:focus-visible { outline: 2px solid var(--ox); outline-offset: 2px; }
+
+/* ---- the working, assembled by scrolling ---- */
+
+/* --p comes from the scroll position of the block. Each term carries its own
+   index and appears when the scroll passes it, so the sum builds left to
+   right as it enters the screen and reads as arithmetic being done. */
+.calc-work {
+  grid-column: 1 / -1;
+  border-top: 1px solid var(--rule); padding-top: 1rem;
+  font-family: var(--mono); font-size: clamp(.6875rem, 1.9vw, .8125rem);
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: .15rem .55rem;
+  line-height: 2.1; color: var(--text-2);
+}
+.calc-work .tm { display: inline-block; }
+:where(html.js) .calc-work .tm {
+  --i: 0;
+  --q: max(0, min((var(--p) - var(--i) * .07) * 9, 1));
+  opacity: var(--q);
+  transform: translateY(calc((1 - var(--q)) * .5em));
+}
+.calc-work .tm:nth-child(2)  { --i: 1; }
+.calc-work .tm:nth-child(3)  { --i: 2; }
+.calc-work .tm:nth-child(4)  { --i: 3; }
+.calc-work .tm:nth-child(5)  { --i: 4; }
+.calc-work .tm:nth-child(6)  { --i: 5; }
+.calc-work .tm:nth-child(7)  { --i: 6; }
+.calc-work .tm:nth-child(8)  { --i: 7; }
+.calc-work .tm:nth-child(9)  { --i: 8; }
+.calc-work .tm:nth-child(10) { --i: 9; }
+.calc-work .tm:nth-child(11) { --i: 10; }
+.calc-work .tm:nth-child(12) { --i: 11; }
+.calc-work .tm-v { color: var(--text); }
+.calc-work .tm-r { color: var(--ox); }
+.on-ink .calc-work .tm-r { color: var(--text); }
+
+/* ---- where the figures come from ---- */
+
+.calc-src {
+  grid-column: 1 / -1;
+  display: grid; gap: .7rem;
+  font-size: var(--small); color: var(--text-2); line-height: 1.6;
+}
+/* Two columns once there is room: four short notes in one narrow column left
+   half the block empty and pushed the last one well below the fold. */
+@media (min-width: 62rem) {
+  .calc-src { grid-template-columns: 1fr 1fr; gap: 1rem 2.5rem; }
+}
+.calc-src p { max-width: 62ch; }
+.calc-src .tag {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ox); margin-right: .55rem;
+  white-space: nowrap;
+}
+.on-ink .calc-src .tag { color: var(--text); }
+.calc-src a { color: inherit; }
+
+@media (max-width: 22.5rem) {
+  .calc-figure { font-size: clamp(1.75rem, 11vw, 2.5rem); }
 }
 
-.branch[aria-expanded='true'] { padding-left: .6rem; }
-.branch[aria-expanded='true'] .bg { transform: translateX(.15rem); }
-.branch[aria-expanded='true'] .bg .ring { stroke: var(--ox); }
-.branch[aria-expanded='true'] .bt { color: var(--ox); }
-.on-ink .branch[aria-expanded='true'] .bt { color: var(--paper); }
-.on-ink .branch[aria-expanded='true'] .bg .ring { stroke: var(--paper); }
+/* ---------- 16c The mark, extruded ------------------------------- */
 
-.branch.dim { opacity: .32; }
-.branch.dim:hover { opacity: .6; }
-
-/* ---- leaves ---- */
-
-.leaves { position: relative; z-index: 1; display: grid; gap: .4rem; align-content: start; }
-
-.leaves-head {
-  display: flex; flex-wrap: wrap; align-items: baseline; gap: .75rem;
-  padding-bottom: .7rem; margin-bottom: .5rem;
-  border-bottom: 1px solid var(--text);
+/* Seven triangle plates and five rings on separate planes, turned by the
+   scroll. It is the logo rather than a decoration, it costs one transform per
+   frame, and it is not shown on phones: there is no pointer to answer and no
+   room to spare. */
+.mark3d { display: none; }
+@media (min-width: 75rem) {
+  .mark3d {
+    --p: 0; --mx: 0; --my: 0;
+    display: block; position: absolute; z-index: 0;
+    right: -1.5rem; top: 50%; width: 18rem; height: 18rem;
+    margin-top: -6rem;
+    perspective: 62rem; pointer-events: none;
+  }
+  .m3 {
+    position: absolute; inset: 0; transform-style: preserve-3d;
+    transform:
+      rotateX(calc((-6 + var(--my) * 9) * 1deg))
+      rotateY(calc((-26 + var(--p) * 46 + var(--mx) * 18) * 1deg));
+    transition: transform .34s var(--ease);
+  }
+  .m3-tri, .m3-ring { position: absolute; inset: 0; transform-style: preserve-3d; }
+  .m3-tri > i, .m3-ring > i { position: absolute; display: block; }
+  .m3-tri > i {
+    left: 4%; top: 50%; width: 60%; height: 42%; margin-top: -21%;
+    background: var(--paper);
+    clip-path: polygon(0 0, 100% 50%, 0 100%, 19% 50%);
+    transform: translateZ(var(--z, 0));
+    opacity: var(--o, 1);
+  }
+  .m3-tri > i:nth-child(1) { --z: -72px; --o: .07; }
+  .m3-tri > i:nth-child(2) { --z: -60px; --o: .09; }
+  .m3-tri > i:nth-child(3) { --z: -48px; --o: .12; }
+  .m3-tri > i:nth-child(4) { --z: -36px; --o: .16; }
+  .m3-tri > i:nth-child(5) { --z: -24px; --o: .22; }
+  .m3-tri > i:nth-child(6) { --z: -12px; --o: .34; }
+  .m3-tri > i:nth-child(7) { --z: 0px;   --o: 1; }
+  .m3-ring > i {
+    right: 8%; top: 50%; width: 19%; height: 19%; margin-top: -9.5%;
+    border: .62rem solid var(--ox); border-radius: 50%;
+    background: none;
+    transform: translateZ(var(--z, 0));
+    opacity: var(--o, 1);
+  }
+  .m3-ring > i:nth-child(1) { --z: -48px; --o: .3; }
+  .m3-ring > i:nth-child(2) { --z: -36px; --o: .45; }
+  .m3-ring > i:nth-child(3) { --z: -24px; --o: .6; }
+  .m3-ring > i:nth-child(4) { --z: -12px; --o: .8; }
+  .m3-ring > i:nth-child(5) { --z: 0px;   --o: 1; }
 }
-.leaves-head h3 {
-  font-family: var(--display); font-weight: 900; text-transform: uppercase;
-  font-size: clamp(1.125rem, 1.8vw, 1.5rem); line-height: 1; letter-spacing: -.015em;
+
+/* ---------- 16d The gate on the scroll rail ---------------------- */
+
+/* The mark rides the whole document on a hairline at the right edge, and
+   inverts itself against whatever it is passing over: difference against
+   paper reads black, against ink it reads paper. One element, no second
+   colour scheme to maintain. */
+.srail { display: none; }
+@media (min-width: 62rem) {
+  /* It used to invert itself with mix-blend-mode: difference, which is exact
+     against ink and against paper and produces mint green against oxblood.
+     Script tells it what it is passing over instead, so the mark only ever
+     holds two of the three brand colours. */
+  .srail {
+    display: block;
+    position: fixed; top: 0; bottom: 0; right: 1.4rem; width: 1px;
+    z-index: 46; pointer-events: none;
+    background: var(--g15);
+    transition: background var(--t-ui) var(--ease);
+  }
+  .srail[data-on='dark'] { background: rgba(244, 241, 234, .22); }
+  .srail > i {
+    position: absolute; left: 0; top: 0; width: 1px;
+    height: calc(var(--p, 0) * 100%);
+    background: var(--ox);
+  }
+  .srail[data-on='dark'] > i { background: rgba(244, 241, 234, .5); }
+  .srail-mark {
+    position: absolute; left: 50%; top: calc(var(--p, 0) * 100%);
+    width: 1.9rem; height: .82rem; margin-left: -.95rem; margin-top: -.41rem;
+    color: var(--ink);
+    transition: color var(--t-ui) var(--ease);
+  }
+  .srail[data-on='dark'] .srail-mark { color: var(--paper); }
+  .srail-mark svg { width: 100%; height: 100%; overflow: visible; }
+  .srail-tri { transform-box: fill-box; transform-origin: 50% 50%;
+    transform: rotate(calc(var(--p, 0) * 360deg)); }
+  .srail-ring { stroke: var(--ox); }
+  .srail[data-on='dark'] .srail-ring { stroke: var(--paper); }
+  /* At the foot of the document the ring fills: the gate has fired. It is a
+     two-pixel reward for reading to the end, and it is the only state this
+     rail has other than where it is. */
+  .srail-ring { transition: fill var(--t) var(--ease); fill: transparent; }
+  .srail[data-end] .srail-ring { fill: var(--ox); }
+  .srail[data-end][data-on='dark'] .srail-ring { fill: var(--paper); }
 }
-.leaves-head span {
+@media print { .srail { display: none; } }
+
+/* ---------- 16e Tilt -------------------------------------------- */
+
+/* Four degrees, on a fine pointer only, and the transform is written by
+   script so nothing here needs an inline style. */
+:where(html.js) [data-tilt] { transition: transform .45s var(--ease); }
+/* Tilt survives in one place: a photograph you can look slightly around. On a
+   card or a figure it was decoration applied by the yard. */
+
+/* ---------- 17 The gate ladder ----------------------------------- */
+
+/* Three questions, one open at a time, answers collapsing to a single line.
+   Sized so that on a 390px screen the current question and the top of the
+   results are on the same screen: the tree it replaces put its answer 998px
+   below the fold, which is why every tap felt broken. */
+
+.ladder { display: grid; gap: var(--s3); }
+
+.lg-steps { display: grid; gap: 1px; background: var(--rule); }
+.lg-step { background: var(--ground); }
+
+.lg-ask {
+  display: flex; align-items: center; gap: .7rem;
+  padding: 1rem .1rem .35rem;
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--text);
+}
+.lg-ask.is-waiting { color: var(--g40); padding-block: 1rem; }
+
+.lg-gate { width: 1.3rem; height: .95rem; flex: none; }
+.lg-gate .lg-tri { fill: var(--g40); transition: fill var(--t) var(--ease); }
+.lg-gate .lg-ring { stroke: var(--g40); transition: stroke var(--t) var(--ease); }
+/* The answer inverts the gate: the ring takes the accent, which is the whole
+   device of the brand used as a state indicator. */
+.lg-gate.is-on .lg-tri { fill: var(--text); }
+.lg-gate.is-on .lg-ring { stroke: var(--ox); }
+.on-ink .lg-gate.is-on .lg-ring { stroke: var(--paper); }
+
+.lg-options {
+  display: grid; gap: .5rem;
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+  padding-bottom: 1rem;
+}
+.lg-opt {
+  text-align: left; display: grid; gap: .15rem; align-content: center;
+  min-height: 3.5rem; padding: .8rem .9rem;
+  border: 1px solid var(--rule);
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.lg-opt:hover, .lg-opt:focus-visible { border-color: var(--text); background: var(--ox-pale); }
+.lg-opt-l { font-weight: 600; font-size: 1rem; line-height: 1.25; }
+.lg-opt-h {
+  font-family: var(--mono); font-size: .625rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text-2);
+}
+
+.lg-chosen {
+  width: 100%; text-align: left;
+  display: grid; grid-template-columns: auto 1fr auto; gap: .7rem;
+  align-items: center; padding: .9rem .1rem; min-height: 3rem;
+}
+.lg-chosen .lg-q {
   font-family: var(--mono); font-size: var(--label); letter-spacing: .12em;
   text-transform: uppercase; color: var(--text-2);
 }
-.leaves-note { font-size: var(--small); color: var(--text-2); max-width: 60ch; margin-bottom: .5rem; }
+.lg-chosen .lg-a { font-weight: 600; grid-column: 2; font-size: 1rem; }
+.lg-chosen .lg-change {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--ox);
+}
+.on-ink .lg-chosen .lg-change { color: var(--paper); }
+@media (max-width: 34rem) {
+  .lg-chosen { grid-template-columns: auto 1fr; }
+  .lg-chosen .lg-a { grid-column: 2; }
+  .lg-chosen .lg-change { grid-column: 2; }
+}
 
-.leaf {
-  position: relative; isolation: isolate; text-align: left;
-  display: grid; grid-template-columns: 4.5rem minmax(0, 1fr) auto auto;
-  align-items: center; gap: .9rem;
-  padding: .7rem .8rem;
+/* ---- the hand-off ---- */
+
+/* Answering a question rebuilds the step, so these fire on insertion without
+   any script. The options wipe out to the right and the answer is printed as
+   a line with a rule drawn under it: the point is that the answer went
+   somewhere rather than that the page redrew. Clip-path, so nothing fades and
+   nothing moves the layout. */
+@media (prefers-reduced-motion: no-preference) {
+  html.js .lg-options .lg-opt { animation: lg-wipe .44s var(--ease) both; }
+  html.js .lg-options .lg-opt:nth-child(1) { animation-delay: 0s; }
+  html.js .lg-options .lg-opt:nth-child(2) { animation-delay: .045s; }
+  html.js .lg-options .lg-opt:nth-child(3) { animation-delay: .09s; }
+  html.js .lg-options .lg-opt:nth-child(4) { animation-delay: .135s; }
+  html.js .lg-options .lg-opt:nth-child(5) { animation-delay: .18s; }
+  html.js .lg-options .lg-opt:nth-child(n+6) { animation-delay: .225s; }
+
+  /* Only the answer that just changed replays. Three lines redrawing on every
+     tap would be noise. */
+  html.js .lg-chosen.is-new .lg-a { animation: lg-print .5s var(--ease) both; }
+  html.js .lg-chosen.is-new::after { animation: lg-draw .55s var(--ease) .1s both; }
+}
+@keyframes lg-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+@keyframes lg-print {
+  from { clip-path: inset(100% 0 0 0); transform: translateY(.35em); }
+  to   { clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes lg-draw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.lg-chosen { position: relative; }
+.lg-chosen::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: var(--ox); transform: scaleX(0); transform-origin: 0 50%;
+}
+.on-ink .lg-chosen::after { background: var(--paper); }
+
+/* ---- the count and the escapes ---- */
+
+.lg-bar {
+  position: relative;
+  display: flex; flex-wrap: wrap; align-items: center; gap: .75rem 1rem;
+  padding-block: .75rem; border-top: 1px solid var(--text);
+}
+/* Three answers in, and the bar draws itself a line. It is the only thing on
+   the page that says finished, and it costs one pseudo-element. */
+.lg-bar::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--ox);
+  transform: scaleX(0); transform-origin: 0 50%;
+  transition: transform .7s var(--ease);
+}
+.ladder[data-done] .lg-bar::after { transform: scaleX(1); }
+.lg-bar b {
+  font-family: var(--display); font-weight: 900; font-size: 1.5rem;
+  letter-spacing: -.02em; line-height: 1;
+}
+.lg-bar .lg-esc {
+  margin-left: auto; display: flex; gap: .5rem; flex-wrap: wrap;
+}
+.lg-search {
+  font: inherit; font-size: 1rem;
+  background: transparent; color: var(--text);
+  border: 1px solid var(--rule); border-radius: 0;
+  padding: .7rem .8rem; min-height: 2.75rem; width: min(16rem, 100%);
+}
+.lg-search:focus-visible { border-color: var(--ox); }
+
+/* ---- results ---- */
+
+.lg-results { display: grid; gap: .4rem; }
+.lg-item {
   border: 1px solid var(--rule);
-  opacity: 0; transform: translateX(-.9rem);
-  transition: opacity .55s var(--ease), transform .7s var(--ease),
-              border-color var(--t-fast) var(--ease);
+  opacity: 0; transform: translateY(.6rem);
+  transition: opacity .5s var(--ease), transform .6s var(--ease);
 }
-.leaf > * { position: relative; z-index: 1; }
-.leaves.in .leaf { opacity: 1; transform: none; }
-.leaves.in .leaf:nth-child(1)  { transition-delay: .04s; }
-.leaves.in .leaf:nth-child(2)  { transition-delay: .08s; }
-.leaves.in .leaf:nth-child(3)  { transition-delay: .12s; }
-.leaves.in .leaf:nth-child(4)  { transition-delay: .16s; }
-.leaves.in .leaf:nth-child(5)  { transition-delay: .20s; }
-.leaves.in .leaf:nth-child(6)  { transition-delay: .24s; }
-.leaves.in .leaf:nth-child(7)  { transition-delay: .28s; }
-.leaves.in .leaf:nth-child(8)  { transition-delay: .32s; }
-.leaves.in .leaf:nth-child(9)  { transition-delay: .36s; }
-.leaves.in .leaf:nth-child(10) { transition-delay: .40s; }
-.leaves.in .leaf:nth-child(11) { transition-delay: .44s; }
-.leaves.in .leaf:nth-child(12) { transition-delay: .48s; }
-.leaves.in .leaf:nth-child(n+13) { transition-delay: .52s; }
+.lg-results.in .lg-item { opacity: 1; transform: none; }
+.lg-results.in .lg-item:nth-child(1) { transition-delay: .04s; }
+.lg-results.in .lg-item:nth-child(2) { transition-delay: .09s; }
+.lg-results.in .lg-item:nth-child(3) { transition-delay: .14s; }
+.lg-results.in .lg-item:nth-child(4) { transition-delay: .19s; }
+.lg-results.in .lg-item:nth-child(n+5) { transition-delay: .22s; }
 
-.leaf:hover, .leaf:focus-visible { border-color: var(--text); }
-.leaf .lc {
-  font-family: var(--mono); font-size: .625rem; letter-spacing: .08em;
-  color: var(--text-2);
+.lg-item summary {
+  display: grid; grid-template-columns: 1fr auto auto; gap: .9rem;
+  align-items: center; cursor: pointer;
+  padding: .85rem .9rem; min-height: 3.25rem;
+  list-style: none;
 }
-.leaf .lt { font-weight: 600; font-size: .9375rem; line-height: 1.25; }
-.leaf .lh {
-  font-family: var(--mono); font-size: .625rem; letter-spacing: .08em;
+.lg-item summary::-webkit-details-marker { display: none; }
+.lg-item summary:focus-visible { outline: 2px solid var(--ox); outline-offset: 2px; }
+.lg-it { font-weight: 600; font-size: .9375rem; line-height: 1.25; }
+/* The hours figure is the whole value proposition. The tree hid it on mobile;
+   here it is on every row at every width. */
+.lg-ih {
+  font-family: var(--mono); font-size: .6875rem; letter-spacing: .06em;
   color: var(--text-2); white-space: nowrap;
 }
-.leaf .lw { display: flex; gap: .25rem; }
-.leaf .lw i { width: .35rem; height: .35rem; background: var(--rule); flex: none; }
-.leaf[data-size='1'] .lw i:nth-child(1),
-.leaf[data-size='2'] .lw i:nth-child(-n+2),
-.leaf[data-size='3'] .lw i:nth-child(-n+3) { background: var(--ox); }
-.on-ink .leaf[data-size='1'] .lw i:nth-child(1),
-.on-ink .leaf[data-size='2'] .lw i:nth-child(-n+2),
-.on-ink .leaf[data-size='3'] .lw i:nth-child(-n+3) { background: var(--paper); }
-.leaf.dim { opacity: .3; }
-.leaf[aria-expanded='true'] { border-color: var(--ox); }
+.lg-ih b {
+  font-family: var(--display); font-weight: 900; font-size: 1.125rem;
+  letter-spacing: -.02em; color: var(--text);
+}
+.lg-ib {
+  font-family: var(--mono); font-size: .625rem; letter-spacing: .08em;
+  text-transform: uppercase; color: var(--text-2); white-space: nowrap;
+}
+@media (max-width: 30rem) {
+  .lg-item summary { grid-template-columns: 1fr auto; }
+  .lg-ib { display: none; }
+}
+.lg-item[open] { border-color: var(--text); }
+.lg-body {
+  padding: 0 .9rem 1rem; display: grid; gap: .6rem;
+  font-size: var(--small); color: var(--text-2); line-height: 1.55;
+}
+.lg-full { font-weight: 600; color: var(--text); font-size: .9375rem; }
+.lg-tools, .lg-est {
+  font-family: var(--mono); font-size: .6875rem; letter-spacing: .04em;
+  line-height: 1.5;
+}
+.lg-est { padding-top: .5rem; border-top: 1px solid var(--rule); }
 
-.leaf-empty { font-size: var(--small); color: var(--text-2); padding: 1rem 0; }
+.lg-more {
+  margin-top: .4rem; padding: .9rem; min-height: 3rem;
+  border: 1px solid var(--text);
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.lg-more:hover { background: var(--ink); color: var(--paper); }
+.lg-none { font-size: var(--small); color: var(--text-2); padding-block: .75rem; }
 
-.tree-col { min-width: 0; }
-
-/* The whole catalogue as plain markup, for crawlers and for anyone without
-   scripting. Hidden by tree.js once the tree is mounted. */
 .fallback-list { margin-top: var(--s4); display: grid; gap: var(--s4); }
 .fallback-family h3 {
   font-size: var(--h1); font-weight: 600;
@@ -1207,20 +1695,8 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 }
 .fallback-family li .mono { font-size: .625rem; letter-spacing: .08em; color: var(--text-2); }
 
-@media (max-width: 64rem) {
-  .tree { grid-template-columns: 1fr; }
-  .tree-links { display: none; }
-  .leaf { grid-template-columns: 4.5rem minmax(0, 1fr) auto; }
-  .leaf .lh { display: none; }
-}
-@media (max-width: 34rem) {
-  .leaf { grid-template-columns: minmax(0, 1fr) auto; }
-  .leaf .lc { display: none; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .leaf { opacity: 1 !important; transform: none !important; }
-  .tree-links { display: none; }
+  .lg-item { opacity: 1 !important; transform: none !important; }
 }
 
 .panel {
@@ -1234,6 +1710,10 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   border-left: 1px solid rgba(244, 241, 234, .2);
 }
 .panel.is-open { transform: none; }
+/* Same defect: the close button was tabbable at x=1799 in a 1440 viewport. */
+.panel:not(.is-open) { visibility: hidden; }
+.panel { transition: transform var(--t-slow) var(--ease), visibility 0s linear var(--t-slow); }
+.panel.is-open { transition: transform var(--t-slow) var(--ease), visibility 0s; }
 .panel-close {
   position: absolute; top: calc(var(--header-h) + .25rem); right: 1.5rem;
   font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
@@ -1278,7 +1758,15 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   border-top: 1px solid var(--rule);
 }
 .people > .person:last-child { border-bottom: 1px solid var(--rule); }
-@media (max-width: 56rem) { .person { grid-template-columns: 1fr; } }
+/* Portrait beside the name rather than above it, so two founders fit in
+   about one screen instead of 1.74. */
+@media (max-width: 56rem) {
+  .person { grid-template-columns: 5.5rem minmax(0, 1fr); gap: var(--s3); align-items: start; }
+  .portrait { max-width: 5.5rem; }
+  .portrait figcaption { display: none; }
+  .person-body h2, .person-body h3 { font-size: 1.375rem; }
+  .person { padding-block: 1.25rem; }
+}
 
 .portrait {
   position: relative; aspect-ratio: 1 / 1; background: var(--ink);
@@ -1315,8 +1803,10 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   letter-spacing: .12em; text-transform: uppercase; color: var(--text-2);
 }
 .person-body { display: grid; gap: var(--s3); }
-.person-body h2 { font-size: var(--d3); font-family: var(--display); font-weight: 900;
-  text-transform: uppercase; line-height: 1; letter-spacing: -.015em; }
+.person-body h2, .person-body h3 {
+  font-size: var(--d3); font-family: var(--display); font-weight: 900;
+  text-transform: uppercase; line-height: 1; letter-spacing: -.015em;
+}
 .person-role { font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
   text-transform: uppercase; color: var(--ox); }
 .cvlist { display: grid; gap: 0; border-top: 1px solid var(--rule); }
@@ -1355,10 +1845,39 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   grid-template-columns: repeat(3, 1fr);
 }
 @media (max-width: 62rem) { .spec { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 38rem) { .spec { grid-template-columns: 1fr; } }
+/* Two columns all the way down, not one. Six numbers one per row was 1.49
+   screens of a phone for six numbers. */
+@media (max-width: 38rem) {
+  .spec { grid-template-columns: repeat(2, 1fr); }
+  .spec-cell { padding: .85rem .8rem; }
+  .spec-cell b { font-size: clamp(1.35rem, 7vw, 1.9rem); }
+  /* The explanatory notes matter least on the smallest screen. */
+  .spec-cell small { display: none; }
+}
 .spec-cell {
+  position: relative; overflow: hidden;
   background: var(--ground); padding: clamp(1rem, 2.2vw, 1.6rem);
   display: grid; gap: .4rem; align-content: start;
+  transition: background var(--t-ui) var(--ease), color var(--t-ui) var(--ease);
+}
+@media (hover: hover) and (pointer: fine) {
+  .spec-cell:hover { background: var(--hi); color: var(--paper); }
+  .spec-cell:hover > span, .spec-cell:hover small { color: rgba(244, 241, 234, .86); }
+}
+/* One pass of a rule across the cell as its figure lands: the panel argues
+   that these were measured, so the arrival should look like a measurement and
+   not like a number appearing. Runs once, per cell, never in a loop. */
+.spec-cell::after {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+  background: var(--ox); opacity: 0;
+}
+.on-ink .spec-cell::after { background: var(--paper); }
+@media (prefers-reduced-motion: no-preference) {
+  .spec-cell.is-measured::after { animation: spec-pass .75s var(--ease) both; }
+}
+@keyframes spec-pass {
+  from { transform: translateX(0); opacity: .9; }
+  to   { transform: translateX(calc(var(--w, 20rem) * 1)); opacity: 0; }
 }
 .spec-cell b {
   font-family: var(--display); font-weight: 900;
@@ -1376,16 +1895,8 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 #specimen:not([data-live]) .spec-cell b { color: var(--text-2); }
 #specimen[data-unsupported] .spec-cell small { opacity: .6; }
 
-/* ---------- 20 Booking --------------------------------------------- */
+/* ---------- 20 Contact block ------------------------------------- */
 
-.booking-frame {
-  border: 1px solid var(--rule); background: var(--paper);
-  min-height: 42rem; width: 100%;
-}
-.booking-fallback {
-  border: 1px solid var(--rule); padding: clamp(1.5rem, 4vw, 3rem);
-  display: grid; gap: var(--s3);
-}
 .contact-list { display: grid; gap: 0; border-top: 1px solid var(--rule); }
 .contact-list li {
   display: grid; grid-template-columns: 8rem 1fr; gap: 1rem;
@@ -1395,13 +1906,13 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   font-family: var(--mono); font-size: var(--label); letter-spacing: .12em;
   text-transform: uppercase; color: var(--text-2);
 }
-.contact-list a { text-decoration: none; font-weight: 600; }
+.contact-list a { text-decoration: none; font-weight: 600; overflow-wrap: anywhere; }
 .contact-list a:hover { color: var(--ox); }
 @media (max-width: 40rem) {
   .contact-list li { grid-template-columns: 1fr; gap: .25rem; }
 }
 
-/* ---------- 21 Brief builder --------------------------------------- */
+/* ---------- 21 Brief builder ---------------------------------------- */
 
 .brief { display: grid; gap: var(--s3); }
 .brief fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: .75rem; }
@@ -1409,29 +1920,90 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
   text-transform: uppercase; color: var(--text-2); padding: 0; margin-bottom: .25rem;
 }
-.brief label.field { display: grid; gap: .4rem; }
-.brief input[type='text'], .brief textarea, .brief select {
-  font: inherit; font-size: var(--small);
+.brief label.field { display: grid; gap: .4rem; font-size: var(--small); }
+/* 16px, below which iOS zooms the page on focus and throws the layout. */
+.brief input[type='text'], .brief input[type='number'], .brief textarea, .brief select {
+  font: inherit; font-size: 1rem;
   background: transparent; color: var(--text);
   border: 1px solid var(--rule); padding: .8rem .9rem; width: 100%;
-  border-radius: 0;
+  border-radius: 0; min-height: 3rem;
   transition: border-color var(--t-fast) var(--ease);
 }
-.brief input:focus, .brief textarea:focus, .brief select:focus { border-color: var(--ox); outline: 0; }
-.brief textarea { resize: vertical; min-height: 7rem; }
+.brief textarea { resize: vertical; min-height: 7rem; line-height: 1.5; }
+.brief [aria-invalid='true'] { border-color: var(--ox); border-width: 2px; }
 .brief .row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s2); }
 @media (max-width: 44rem) { .brief .row { grid-template-columns: 1fr; } }
-.brief .hint { font-size: var(--small); color: var(--text-2); }
-.brief output {
-  font-family: var(--display); font-weight: 900; font-size: 2rem;
-  letter-spacing: -.02em; line-height: 1;
+.brief .hint { font-size: var(--small); color: var(--text-2); line-height: 1.5; }
+
+/* Full-width rows, not 16px boxes. The checkbox was 16x16, under the 24px
+   WCAG minimum and far under the 44px platform guidance. */
+.brief .checks { display: grid; gap: .4rem; }
+.brief .checks label {
+  display: flex; align-items: center; gap: .8rem;
+  min-height: 3rem; padding: .6rem .9rem;
+  border: 1px solid var(--rule);
+  font-size: .9375rem; cursor: pointer;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
-.brief input[type='range'] { accent-color: var(--ox); width: 100%; padding: 0; border: 0; }
-.brief .est {
-  border: 1px solid var(--ox); padding: 1.1rem 1.25rem;
-  display: grid; gap: .35rem;
+.brief .checks label:hover { border-color: var(--text); }
+.brief .checks label:has(:checked) { border-color: var(--ox); background: var(--ox-pale); }
+.brief input[type='checkbox'] {
+  width: 1.5rem; height: 1.5rem; accent-color: var(--ox); flex: none; margin: 0;
 }
-.brief .est .label { color: var(--ox); }
+@media (min-width: 44rem) {
+  .brief .checks { grid-template-columns: 1fr 1fr; }
+}
+
+/* ---- readiness ---- */
+
+/* The button used to look identical whether or not it could do anything, and
+   only said so after being pressed. It now carries the state: outline while
+   the brief is not sendable, filled the moment it is. The oxblood rises from
+   the bottom edge, which is the same gesture the hover fill uses, spent on
+   something that means more than hover. */
+.brief-send .btn {
+  --btn-bg: transparent; --btn-fg: var(--text);
+  border-color: var(--g40);
+}
+.brief-send .btn::after { background: var(--ox); }
+.brief-send[data-ready] .btn { --btn-fg: var(--paper); border-color: var(--ox); }
+.brief-send[data-ready] .btn::after { transform: translateY(0); }
+.brief-send .btn .gate { transition: transform var(--t-ui) var(--ease); }
+.brief-send[data-ready] .btn .gate { transform: translateX(.25rem); }
+.brief-send { display: grid; gap: .7rem; }
+.brief-ready {
+  font-family: var(--mono); font-size: var(--label); letter-spacing: .12em;
+  text-transform: uppercase; color: var(--text-2);
+  display: flex; align-items: center; gap: .5rem; min-height: 1.2em;
+}
+.brief-ready .gate { width: .8rem; height: .6rem; flex: none; color: var(--g40);
+  transition: color var(--t-ui) var(--ease), transform var(--t) var(--ease); }
+.brief-send[data-ready] .brief-ready { color: var(--text); }
+.brief-send[data-ready] .brief-ready .gate { color: var(--ox); transform: translateX(.2rem); }
+
+/* ---- the live figure, beside the inputs ---- */
+
+.est-live {
+  border: 1px solid var(--ox);
+  padding: clamp(1rem, 2.4vw, 1.5rem);
+  display: grid; gap: .6rem;
+  position: sticky; top: calc(var(--header-h) + 1rem);
+}
+.est-live .label { color: var(--ox); }
+.est-row { display: flex; align-items: center; gap: 1rem; }
+.est-ring { width: 3.25rem; height: 3.25rem; flex: none; color: var(--ox); }
+.est-arc { transition: stroke-dashoffset .42s var(--ease); }
+.est-live output {
+  font-family: var(--display); font-weight: 900;
+  font-size: clamp(2.5rem, 7vw, 3.5rem); line-height: 1;
+  letter-spacing: -.03em; font-variant-numeric: tabular-nums;
+}
+@media (max-width: 62rem) {
+  .est-live { position: static; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .est-arc { transition: none; }
+}
 
 /* ---------- 22 Notes ---------------------------------------------- */
 
@@ -1470,7 +2042,7 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 }
 .footer-grid {
   display: grid; gap: var(--s4);
-  grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr));
 }
 @media (max-width: 62rem) { .footer-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 40rem) { .footer-grid { grid-template-columns: 1fr; } }
@@ -1478,8 +2050,8 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   font-family: var(--mono); font-size: var(--label); letter-spacing: .14em;
   text-transform: uppercase; color: rgba(244, 241, 234, .55); margin-bottom: var(--s2);
 }
-.footer ul { display: grid; gap: .55rem; }
-.footer a { text-decoration: none; font-size: var(--small); color: rgba(244, 241, 234, .85); }
+.footer ul { display: grid; gap: .35rem; }
+.footer a { text-decoration: none; font-size: var(--small); color: rgba(244, 241, 234, .9); overflow-wrap: anywhere; }
 .footer a:hover { color: var(--paper); text-decoration: underline; text-underline-offset: .2em; }
 .footer .sig {
   font-family: var(--display); font-weight: 900; text-transform: uppercase;
@@ -1548,7 +2120,7 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
    Brand s09: the pattern always sits behind type and never competes with
    it, which is why it tops out well under half opacity and why it scales
    down into place rather than moving. */
-.veil { position: relative; isolation: isolate; --tile: 26rem; }
+.veil { position: relative; isolation: isolate; --tile: 26rem; --vx: 0; --vy: 0; }
 .veil::before {
   content: '';
   position: absolute; inset: 0; z-index: -1;
@@ -1557,12 +2129,18 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   background-repeat: repeat;
   background-position: center;
   opacity: 0;
-  transform: scale(1.08);
-  transition: opacity .7s var(--ease), transform 1.4s var(--ease);
+  /* The field leans towards the pointer. Two custom properties on the same
+     element as the pseudo, so the recalculation is scoped to it and no child
+     is touched. Transform only: the tiling never repaints. */
+  transform: translate3d(calc(var(--vx) * 14px), calc(var(--vy) * 14px), 0) scale(1.09);
+  transition: opacity .7s var(--ease), transform .55s var(--ease);
   pointer-events: none;
 }
 .veil:hover::before,
-.veil:focus-within::before { opacity: .38; transform: none; }
+.veil:focus-within::before {
+  opacity: .38;
+  transform: translate3d(calc(var(--vx) * 14px), calc(var(--vy) * 14px), 0) scale(1);
+}
 
 /* Dark surfaces get their own artwork rather than the same file at a higher
    opacity: the muted dark motif is painted in near-blacks and stays invisible
@@ -1578,10 +2156,11 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .veil-lg { --tile: 40rem; }
 
 @media (prefers-reduced-motion: reduce) {
-  .veil::before { transition: none; transform: none; }
+  .veil::before { transition: none; transform: none !important; }
 }
 @media (hover: none), (pointer: coarse) {
-  /* No hover to trigger it, so show a whisper of it permanently instead. */
+  /* No hover and no pointer to lean towards, so show a whisper of it
+     permanently and hold it still. */
   .veil::before { opacity: .26; transform: none; }
   .on-ink .veil::before { opacity: .34; }
   .statement.veil::before,
@@ -1603,9 +2182,6 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
 .cards-stacked { margin-top: 1px; }
 .footer-legal-head { margin-top: var(--s3); }
 
-/* A secondary contact panel once the booking frame is live. */
-.booking-fallback.is-secondary { border-color: var(--rule-soft); margin-top: var(--s3); }
-.booking-fallback.is-secondary [data-booking-direct] { display: none; }
 
 /* Legal document header block, borrowed from the brand guidelines. */
 .doc-meta { border-top: 1px solid var(--text); }
@@ -1656,23 +2232,10 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
    full size belongs to the landing hero only. */
 .page-head .d1, .oops .d1 { font-size: clamp(2.25rem, 5.8vw, 4.5rem); }
 
-.reticle {
-  position: fixed; top: 0; left: 0; z-index: 90; pointer-events: none;
-  width: 2rem; height: 2rem; margin: -1rem 0 0 -1rem;
-  opacity: 0;
-  transition: opacity .3s var(--ease), width .3s var(--ease), height .3s var(--ease),
-              margin .3s var(--ease);
-  will-change: transform;
-}
-.reticle svg { width: 100%; height: 100%; }
-.reticle.on { opacity: .85; }
-.reticle.grow { width: 3.5rem; height: 3.5rem; margin: -1.75rem 0 0 -1.75rem; }
-@media (hover: none), (pointer: coarse) { .reticle { display: none; } }
-
 /* ---------- 24b Mobile and touch --------------------------------- */
 
-/* Notched phones: keep the fixed chrome and the page edges clear of the
-   rounded corners and the home indicator. */
+/* Notched phones: keep fixed chrome and page edges clear of the rounded
+   corners and the home indicator. */
 @supports (padding: env(safe-area-inset-left)) {
   .wrap {
     padding-left: max(var(--margin), env(safe-area-inset-left));
@@ -1684,83 +2247,66 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
     padding-bottom: max(2rem, env(safe-area-inset-bottom));
   }
   .footer { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
-  .panel { padding-bottom: max(2rem, env(safe-area-inset-bottom)); }
 }
 
-/* Anything that gets tapped clears the 44px target the platform guidelines
-   ask for. Keyed on a coarse pointer OR a small viewport: pointer detection
-   is unreliable on hybrid devices, and a narrow screen is being touched
-   often enough that guessing wrong costs more than the extra padding. */
+/* Anything tapped clears 44px. Keyed on a coarse pointer OR a narrow
+   viewport, because pointer detection is unreliable on hybrid devices and a
+   narrow screen is touched often enough that guessing wrong costs more than
+   the padding. */
 @media (pointer: coarse), (max-width: 46rem) {
-  .chip { padding: .85rem 1rem; min-height: 2.75rem; display: inline-flex; align-items: center; }
   .btn { padding: 1.05rem 1.4rem; min-height: 3rem; }
-  .branch { padding-block: 1.15rem; min-height: 3.25rem; }
-  .leaf { padding-block: 1rem; min-height: 3.25rem; }
-  .drawer a { padding-block: .55rem; }
-  .footer a, .contact-list a { display: inline-block; padding-block: .35rem; }
-  .panel-close { padding: .75rem; margin: -.75rem; }
-  /* The logo and the breadcrumb are links too, and both were under the
-     target. Padding grows the hit area without moving the artwork. */
+  .chip { padding: .85rem 1rem; min-height: 2.75rem; display: inline-flex; align-items: center; }
+  .lg-opt { min-height: 3.75rem; }
+  .lg-item summary { min-height: 3.5rem; }
+  .lg-chosen { min-height: 3.25rem; }
+  .lg-more { min-height: 3.25rem; }
+  .drawer > a { padding-block: .55rem; }
+  .footer a { display: inline-block; padding-block: .6rem; }
+  .contact-list a { display: inline-block; padding-block: .6rem; }
+  .drawer-foot a { display: inline-block; padding-block: .7rem; }
   .brand { padding-block: .6rem; }
   .breadcrumb a { display: inline-block; padding-block: .8rem; }
-  .note-row { padding-block: 1.5rem; }
-  /* 16px or iOS zooms the page on focus, which throws the layout. */
-  .brief input[type='text'], .brief textarea, .brief select { font-size: 1rem; }
+  .calc-range { height: 3rem; }
+  /* 16px or iOS zooms the page on focus and throws the layout. */
+  .brief input, .brief textarea, .brief select, .lg-search { font-size: 1rem; }
 }
 
-/* Scrolling containers should not drag the page behind them. */
-.drawer, .panel { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+/* Scrolling containers must not drag the page behind them. */
+.drawer { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
 @media (max-width: 46rem) {
   /* A 26rem tile on a 390px screen shows about one repeat, so the pattern
-     reads as scattered marks rather than as a pattern. Shrinking the tile
-     turns it back into texture, which is what it is for. */
+     reads as scattered marks rather than as a pattern. */
   .veil { --tile: 11rem; }
   .veil-lg { --tile: 14rem; }
-  /* Denser tile means more visual weight for the same opacity, so the
-     resting level comes down with it. */
   .statement.veil::before,
   .section.on-ink.veil::before { opacity: .2; }
   .veil::before { opacity: .2; }
-
-  /* Nine filters wrapped onto four rows is a wall. One swipeable row reads
-     as a control instead. */
-  .filters {
-    display: flex; flex-wrap: nowrap;
-    overflow-x: auto; overscroll-behavior-x: contain;
-    scroll-snap-type: x proximity;
-    margin-inline: calc(var(--margin) * -1);
-    padding-inline: var(--margin);
-    scrollbar-width: none;
-  }
-  .filters::-webkit-scrollbar { display: none; }
-  .filters .chip { flex: none; scroll-snap-align: start; }
-
-  /* A sheet from the bottom is where a thumb already is. */
-  .panel {
-    inset: auto 0 0 0; width: 100%;
-    max-height: 86svh;
-    border-left: 0; border-top: 1px solid rgba(244, 241, 234, .2);
-    padding-top: 1.5rem;
-    transform: translateY(101%);
-  }
-  .panel.is-open { transform: none; }
-  .panel-close { top: 1.25rem; right: 1.25rem; }
 
   /* One clear action per screen beats two half-width ones. */
   .cta-row .btn { width: 100%; justify-content: space-between; }
   .cta-row { gap: .75rem; }
 
   .hero { min-height: auto; padding-bottom: 2.5rem; }
-  .page-head { padding-block: var(--s3) var(--s4); }
+  .page-head { padding-block: var(--s2) var(--s3); }
+  .page-head .d1 { font-size: clamp(1.75rem, 8.5vw, 2.5rem); }
+  .page-head .grid { gap: var(--s2); }
   .gate-rule { margin-block: 0; }
   .prose table { font-size: .8125rem; }
+  .section { padding-block: clamp(2.5rem, 8vw, 4rem); }
+  .section-tight { padding-block: clamp(2rem, 6vw, 3rem); }
 }
 
 /* Short landscape phones: never let the hero eat the whole viewport. */
 @media (max-height: 30rem) and (orientation: landscape) {
   .hero { min-height: auto; padding-top: calc(var(--header-h) + 1.5rem); }
-  .rail-sticky { height: auto; position: static; }
+}
+
+/* 320px, the WCAG 1.4.10 test width. */
+@media (max-width: 22.5rem) {
+  .lg-bar { gap: .5rem; }
+  .lg-esc { margin-left: 0; width: 100%; }
+  .lg-search { width: 100%; }
 }
 
 /* ---------- 25 Reduced motion ----------------------------------- */
@@ -1784,21 +2330,36 @@ a.card:hover::after, a.card:focus-visible::after { opacity: 1; }
   .gate-rule .gr-tri, .gate-rule .gr-ring { opacity: 1 !important; transform: none !important; }
   [data-reveal='head'] .label::before { transform: none !important; }
   [data-reveal='head'] .label::after { opacity: 1 !important; transform: none !important; }
-  /* Without the scroll-driven transform the track would overflow inside a
-     clipped sticky box and become unreachable. Lay it out vertically instead,
-     exactly as the phone breakpoint does. */
-  .rail-outer { height: auto !important; }
-  .rail-sticky { position: static; height: auto; overflow: visible; padding-block: var(--s5); }
-  .rail-track {
-    transform: none !important;
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: 1px; background: var(--rule); padding-inline: var(--margin);
-  }
-  .rail-card { border: 0; background: var(--ground); min-height: 0; }
   .hero-canvas { display: none; }
   .reticle { display: none; }
   .marquee-track { animation: none; }
   .intro { display: none; }
+  /* The drum, the extruded mark and the tilt all stop being motion and
+     become layout: show the value, show one plate, level everything. */
+  .odo-d { overflow: visible; perspective: none; width: auto; }
+  .odo-r { transition: none !important; transform: none !important;
+    position: static; transform-style: flat; }
+  .odo-r > i { position: static; transform: none !important; }
+  .odo-r > i:not(.is-shown) { display: none; }
+  .m3 { transition: none !important; transform: none !important; }
+  .m3-tri > i:not(:nth-child(7)), .m3-ring > i:not(:nth-child(5)) { display: none; }
+  .m3-tri > i, .m3-ring > i { transform: none !important; opacity: 1 !important; }
+  [data-tilt] { transform: none !important; }
+  /* Belt and braces for the two clip-based reveals: if the reveal class never
+     lands, the numeral and the facts must still be readable. */
+  .step-n { clip-path: none !important; }
+  /* The price band: the rule is simply there, the numeral is simply up. */
+  .on-ox .figure::before { transform: scaleX(1) !important; }
+  .on-ox .figure b { transform: none !important; }
+  .on-ox .figure > span { opacity: 1 !important; }
+  .wd.is-hl::after { transform: scaleX(1) !important; }
+  .step-meta span { opacity: 1 !important; transform: none !important; }
+  .lg-opt, .lg-chosen .lg-a, .lg-chosen::after,
+  .spec-cell::after { animation: none !important; clip-path: none !important; }
+  .lg-chosen::after { transform: scaleX(1) !important; }
+  .calc-work .tm { opacity: 1 !important; transform: none !important; }
+  .srail-tri { transform: none !important; }
+  [data-reveal='words'][data-3d] .wd > i { opacity: 1 !important; transform: none !important; }
 }
 
 /* ---------- 26 Print -------------------------------------------- */

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Privacy notice | Uncommun Logic</title>
-<meta name="description" content="What we collect, which is nothing on this site: no cookies, no analytics, no form service. What our host and the booking page can see, what we do with what you send us, and how we handle client data under the Australian Privacy Principles.">
+<meta name="description" content="What we collect on this site: nothing. No cookies, no analytics, no form service, no third-party embed. And how we handle client data under the APPs.">
 <link rel="canonical" href="https://www.uncommunlogic.com/legal/privacy/">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="Uncommun Logic">
 <meta property="og:locale" content="en_AU">
 <meta property="og:title" content="Privacy notice | Uncommun Logic">
-<meta property="og:description" content="What we collect, which is nothing on this site: no cookies, no analytics, no form service. What our host and the booking page can see, what we do with what you send us, and how we handle client data under the Australian Privacy Principles.">
+<meta property="og:description" content="What we collect on this site: nothing. No cookies, no analytics, no form service, no third-party embed. And how we handle client data under the APPs.">
 <meta property="og:url" content="https://www.uncommunlogic.com/legal/privacy/">
 <meta property="og:image" content="https://www.uncommunlogic.com/assets/social/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -46,12 +46,18 @@
 
 <div class="progress" aria-hidden="true"><i></i></div>
 
-<div class="reticle" aria-hidden="true">
-  <svg viewBox="0 0 40 40" fill="none">
-    <path d="M11 11 L27 20 L11 29 L14.2 20 Z" fill="#7A1220"/>
-    <circle cx="31" cy="20" r="3.4" stroke="#7A1220" stroke-width="2"/>
-  </svg>
+<!-- The mark rides the whole document, and inverts itself against whatever it
+     is passing over. Desktop only: the phone has the dock instead. -->
+<div class="srail" aria-hidden="true">
+  <i></i>
+  <span class="srail-mark">
+    <svg viewBox="0 0 56 24" focusable="false">
+      <path class="srail-tri" d="M2 4 L26 12 L2 20 L6.6 12 Z" fill="currentColor"/>
+      <circle class="srail-ring" cx="36.5" cy="12" r="5" fill="none" stroke-width="2.6"/>
+    </svg>
+  </span>
 </div>
+
 
 <header class="header">
   <div class="wrap">
@@ -59,28 +65,21 @@
       <img src="/assets/brand/lockup-h.svg" alt="Uncommun Logic" width="1323" height="200">
     </a>
     <nav class="nav" aria-label="Primary">
-      <a href="/solutions/">Automation</a>
-      <a href="/websites/">Websites</a>
+      <a href="/solutions/">What we build</a>
       <a href="/how-we-work/">How we work</a>
-      <a href="/who-we-are/">Who we are</a>
-      <a class="btn" href="/book/"><span>Book the free hour</span><svg class="gate" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M0 0 L16 9 L0 18 L3.2 9 Z" fill="currentColor"/><circle cx="20" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></a>
+      <a class="btn" href="/talk/"><span>Send a brief</span><svg class="gate" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M0 0 L16 9 L0 18 L3.2 9 Z" fill="currentColor"/><circle cx="20" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></a>
     </nav>
     <button class="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Menu"><i></i></button>
   </div>
 </header>
 
 <nav class="drawer on-ink" id="drawer" aria-label="Menu">
-  <a href="/solutions/">Automation</a>
-  <a href="/websites/">Websites</a>
+  <a href="/solutions/">What we build</a>
   <a href="/how-we-work/">How we work</a>
-  <a href="/who-we-are/">Who we are</a>
-  <a href="/technology/">Technology</a>
-  <a href="/notes/">Notes</a>
-  <a href="/book/">Book the free hour</a>
-  <a href="/contact/">Contact</a>
+  <a href="/talk/">Send a brief</a>
   <div class="drawer-foot">
-    <a class="small" data-ul="email" href="#">email</a>
-    <a class="small" data-ul="phone" href="#">phone</a>
+    <a class="small" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a>
+    <a class="small" data-ul="phone" href="tel:+61456810652">+61 456 810 652</a>
   </div>
 </nav>
 
@@ -107,8 +106,8 @@
             <div><dt>Operator</dt><dd>Uncommun Logic</dd></div>
             <div><dt>ABN</dt><dd>[to be advised]</dd></div>
             <div><dt>Registered in</dt><dd>[State of registration to be confirmed], Australia</dd></div>
-            <div><dt>Contact</dt><dd><a class="link" data-ul="email" href="#">email</a></dd></div>
-            <div><dt>Version</dt><dd>1.0, 9 August 2026</dd></div>
+            <div><dt>Contact</dt><dd><a class="link" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a></dd></div>
+            <div><dt>Version</dt><dd>1.1, 14 August 2026</dd></div>
           </dl>
         </div>
 
@@ -137,7 +136,7 @@
           <p>We have decided to handle personal information in accordance with the Australian Privacy Principles anyway, and to treat this notice as binding on us. We prefer being held to it. If our circumstances change so that the Act applies to us by force of law, that changes nothing about how we behave.</p>
 
           <h2>3. What this website does and does not collect</h2>
-          <p><b>Directly: nothing.</b> No contact form submits to a server. The brief builder on the <a href="/contact/">contact page</a> runs entirely in your browser and composes a message in your own mail application. Until you press send in your mail app, nothing has left your device.</p>
+          <p><b>Directly: nothing.</b> No contact form submits to a server. The brief builder on the <a href="/talk/">contact page</a> runs entirely in your browser and composes a message in your own mail application. Until you press send in your mail app, nothing has left your device.</p>
           <p><b>Local storage.</b> One item is stored in your browser's session storage, named <code>ul-intro</code>, so the opening animation plays once rather than on every page. It is not an identifier, it is not personal information, it never leaves your browser, and it disappears when you close the tab.</p>
           <p><b>No analytics.</b> No Google Analytics, no tracking pixel, no advertising tag, no session recording, no heatmap, no fingerprinting. If that changes, this page and its date change with it.</p>
 
@@ -145,9 +144,9 @@
           <p>The site is hosted on GitHub Pages, a service of GitHub, Inc., a Microsoft company. To serve a page, GitHub processes technical information including your IP address, the page requested, the time, and your browser's user-agent string. This happens on GitHub's infrastructure under GitHub's own privacy practices, and it happens on servers outside Australia.</p>
           <p>We do not receive those logs, we cannot query them, and we do not build any profile from them.</p>
 
-          <h2>5. The booking page</h2>
-          <p>Booking a call may use Google Calendar appointment scheduling. If you use it, the information you enter, including your name, email address and any note, goes to Google under Google's own terms and privacy policy, and Google may set its own cookies in your browser. We receive the booking details in our calendar.</p>
-          <p>You never have to use it. Email or phone reaches us just as fast, and both are on the <a href="/contact/">contact page</a>.</p>
+          <h2>5. Third-party services on this site</h2>
+          <p>There are none. No calendar embed, no maps, no chat widget, no form service, no font service, no content delivery network. Every file a page loads comes from this domain, and the content security policy declared in each page forbids anything else.</p>
+          <p>That includes the brief builder on the <a href="/talk/">contact page</a>: it runs entirely in your browser and composes a message in your own mail application. Nothing you type there is transmitted anywhere until you press send in your own mail client, and we never see a draft you abandon. The same is true of the figures you enter into the calculator on the home page: they never leave your device.</p>
 
           <h2>6. Information you send us</h2>
           <p>When you contact us we collect what you choose to give us. Typically: your name, your email address, your phone number, your business, and a description of the process you want fixed. Sometimes that description contains figures about your business.</p>
@@ -172,7 +171,7 @@
           </ul>
 
           <h2>9. Information that goes overseas</h2>
-          <p>Australian Privacy Principle 8 deals with disclosing personal information outside Australia. Two things are true of this website by default: our host (GitHub, in the United States) processes request logs, and Google processes anything you enter into the booking page.</p>
+          <p>Australian Privacy Principle 8 deals with disclosing personal information outside Australia. One thing is true of this website by default: our host (GitHub, in the United States) processes request logs. Nothing else about this site sends anything overseas, because nothing else about this site sends anything anywhere.</p>
           <p>For paid work, any overseas processing is identified by name and by country in writing before it happens, and it is your decision. Common possibilities include Microsoft Azure regions, Google Cloud, Anthropic and OpenAI, all of which may process data outside Australia. We do not treat that as a technicality: for some clients it is the deciding constraint on the whole design.</p>
 
           <h2>10. How we protect it</h2>
@@ -184,7 +183,7 @@
           <p>You can ask us to delete your enquiry at any time and we will, unless we are required to keep it.</p>
 
           <h2>12. Getting at your information, and correcting it</h2>
-          <p>You can ask us what we hold about you and ask us to correct it, in line with Australian Privacy Principles 12 and 13. Email <a class="link" data-ul="email" href="#">email</a>. We will respond within 30 days. There is no charge. If we refuse, we will tell you why in writing.</p>
+          <p>You can ask us what we hold about you and ask us to correct it, in line with Australian Privacy Principles 12 and 13. Email <a class="link" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a>. We will respond within 30 days. There is no charge. If we refuse, we will tell you why in writing.</p>
 
           <h2>13. Complaints</h2>
           <p>Complain to us first, at the email address above, and we will respond within 30 days. If you are not satisfied with the outcome, you can take it to the Office of the Australian Information Commissioner at <a class="link" href="https://www.oaic.gov.au" rel="noopener noreferrer">oaic.gov.au</a> or on 1300 363 992.</p>
@@ -210,7 +209,7 @@
         <div class="callout veil">
           <p class="label">Questions about this page</p>
           <p>Write to Clarence and you will get an answer from a person, not a template.</p>
-          <div class="cta-row"><a class="btn" data-ul="email" data-ul-keep href="#"><span>Email Clarence</span></a></div>
+          <div class="cta-row"><a class="btn" data-ul="email" data-ul-keep href="mailto:Clarence.allouard@uncommunlogic.com"><span>Email Clarence</span></a></div>
         </div>
         <p class="small note-under">Related: <a class="link" href="/legal/cookies/">Cookies and tracking</a>, <a class="link" href="/legal/terms/">Terms of use</a></p>
       </div>
@@ -238,10 +237,9 @@
       <div>
         <h2>The work</h2>
         <ul>
-          <li><a href="/solutions/">Automation catalogue</a></li>
-          <li><a href="/websites/">Websites and web apps</a></li>
+          <li><a href="/solutions/">What we build</a></li>
           <li><a href="/how-we-work/">How we work</a></li>
-          <li><a href="/technology/">Technology</a></li>
+          <li><a href="/talk/">Send a brief</a></li>
         </ul>
       </div>
       <div>
@@ -249,15 +247,15 @@
         <ul>
           <li><a href="/who-we-are/">Who we are</a></li>
           <li><a href="/notes/">Notes</a></li>
-          <li><a href="/book/">Book the free hour</a></li>
-          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/talk/">Book the free hour</a></li>
+          <li><a href="/talk/">Contact</a></li>
         </ul>
       </div>
       <div>
         <h2>Contact</h2>
         <ul>
-          <li><a data-ul="email" href="#">email</a></li>
-          <li><a data-ul="phone" href="#">phone</a></li>
+          <li><a data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a></li>
+          <li><a data-ul="phone" href="tel:+61456810652">+61 456 810 652</a></li>
         </ul>
         <h2 class="footer-legal-head">Legal</h2>
         <ul>

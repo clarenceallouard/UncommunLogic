@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Accessibility statement | Uncommun Logic</title>
-<meta name="description" content="Our target is WCAG 2.2 Level AA. Measured contrast, reduced-motion support, keyboard operation and no-JavaScript fallbacks, plus an honest list of the five things we know are not yet right.">
+<meta name="description" content="Our target is WCAG 2.2 Level AA: measured contrast, reduced motion, keyboard operation, no-JavaScript fallbacks, and the five things we know are not right.">
 <link rel="canonical" href="https://www.uncommunlogic.com/legal/accessibility/">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="Uncommun Logic">
 <meta property="og:locale" content="en_AU">
 <meta property="og:title" content="Accessibility statement | Uncommun Logic">
-<meta property="og:description" content="Our target is WCAG 2.2 Level AA. Measured contrast, reduced-motion support, keyboard operation and no-JavaScript fallbacks, plus an honest list of the five things we know are not yet right.">
+<meta property="og:description" content="Our target is WCAG 2.2 Level AA: measured contrast, reduced motion, keyboard operation, no-JavaScript fallbacks, and the five things we know are not right.">
 <meta property="og:url" content="https://www.uncommunlogic.com/legal/accessibility/">
 <meta property="og:image" content="https://www.uncommunlogic.com/assets/social/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -46,12 +46,18 @@
 
 <div class="progress" aria-hidden="true"><i></i></div>
 
-<div class="reticle" aria-hidden="true">
-  <svg viewBox="0 0 40 40" fill="none">
-    <path d="M11 11 L27 20 L11 29 L14.2 20 Z" fill="#7A1220"/>
-    <circle cx="31" cy="20" r="3.4" stroke="#7A1220" stroke-width="2"/>
-  </svg>
+<!-- The mark rides the whole document, and inverts itself against whatever it
+     is passing over. Desktop only: the phone has the dock instead. -->
+<div class="srail" aria-hidden="true">
+  <i></i>
+  <span class="srail-mark">
+    <svg viewBox="0 0 56 24" focusable="false">
+      <path class="srail-tri" d="M2 4 L26 12 L2 20 L6.6 12 Z" fill="currentColor"/>
+      <circle class="srail-ring" cx="36.5" cy="12" r="5" fill="none" stroke-width="2.6"/>
+    </svg>
+  </span>
 </div>
+
 
 <header class="header">
   <div class="wrap">
@@ -59,28 +65,21 @@
       <img src="/assets/brand/lockup-h.svg" alt="Uncommun Logic" width="1323" height="200">
     </a>
     <nav class="nav" aria-label="Primary">
-      <a href="/solutions/">Automation</a>
-      <a href="/websites/">Websites</a>
+      <a href="/solutions/">What we build</a>
       <a href="/how-we-work/">How we work</a>
-      <a href="/who-we-are/">Who we are</a>
-      <a class="btn" href="/book/"><span>Book the free hour</span><svg class="gate" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M0 0 L16 9 L0 18 L3.2 9 Z" fill="currentColor"/><circle cx="20" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></a>
+      <a class="btn" href="/talk/"><span>Send a brief</span><svg class="gate" viewBox="0 0 24 18" aria-hidden="true" focusable="false"><path d="M0 0 L16 9 L0 18 L3.2 9 Z" fill="currentColor"/><circle cx="20" cy="9" r="2.6" fill="none" stroke="currentColor" stroke-width="1.9"/></svg></a>
     </nav>
     <button class="burger" type="button" aria-expanded="false" aria-controls="drawer" aria-label="Menu"><i></i></button>
   </div>
 </header>
 
 <nav class="drawer on-ink" id="drawer" aria-label="Menu">
-  <a href="/solutions/">Automation</a>
-  <a href="/websites/">Websites</a>
+  <a href="/solutions/">What we build</a>
   <a href="/how-we-work/">How we work</a>
-  <a href="/who-we-are/">Who we are</a>
-  <a href="/technology/">Technology</a>
-  <a href="/notes/">Notes</a>
-  <a href="/book/">Book the free hour</a>
-  <a href="/contact/">Contact</a>
+  <a href="/talk/">Send a brief</a>
   <div class="drawer-foot">
-    <a class="small" data-ul="email" href="#">email</a>
-    <a class="small" data-ul="phone" href="#">phone</a>
+    <a class="small" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a>
+    <a class="small" data-ul="phone" href="tel:+61456810652">+61 456 810 652</a>
   </div>
 </nav>
 
@@ -107,8 +106,8 @@
             <div><dt>Operator</dt><dd>Uncommun Logic</dd></div>
             <div><dt>ABN</dt><dd>[to be advised]</dd></div>
             <div><dt>Registered in</dt><dd>[State of registration to be confirmed], Australia</dd></div>
-            <div><dt>Contact</dt><dd><a class="link" data-ul="email" href="#">email</a></dd></div>
-            <div><dt>Version</dt><dd>1.0, 9 August 2026</dd></div>
+            <div><dt>Contact</dt><dd><a class="link" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a></dd></div>
+            <div><dt>Version</dt><dd>1.1, 14 August 2026</dd></div>
           </dl>
         </div>
 
@@ -142,9 +141,9 @@
 
           <h2>3. What we know is not perfect</h2>
           <ul>
-            <li><b>The catalogue detail panel</b> is a side panel rather than a modal dialog. Focus moves into it and Escape closes it, but focus is not trapped inside it, so a keyboard user can tab past it into the page behind. We consider this a reasonable trade-off rather than a correct implementation, and we will say so until it is fixed.</li>
-            <li><b>The horizontal catalogue rail on the home page</b> moves sideways as you scroll on large screens. It becomes a plain vertical list on narrow screens and when reduced motion is set, but on a large screen it is a movement some people will find uncomfortable.</li>
-            <li><b>The booking page embeds Google Calendar.</b> Its accessibility is Google's, not ours, and we cannot fix it. Email and phone are on every page as an equivalent route, and they reach us faster.</li>
+            <li><b>The calculator on the home page needs scripting.</b> With scripting off, the three sliders are hidden rather than left inert, and the page shows the default figures, the whole arithmetic and both cited sources as ordinary text.</li>
+            <li><b>The total on that calculator is drawn as a rotating drum of digits.</b> The value is also written to a live region, so a screen reader announces it when it changes, and the same figure is repeated in the line of arithmetic underneath. Under reduced motion the drum does not turn.</li>
+            <li><b>The mark that rides the right-hand edge as you scroll, the extruded mark on the first screen, and the tilt on cards under a mouse are decoration.</b> All three are hidden from assistive technology, none carries information that is not also written somewhere, and all three stop under reduced motion. The extruded mark and the tilt never run on a touch screen at all.</li>
             <li><b>Our display typeface is heavy and wide by design.</b> Large headings are set in it. Body text is set in a regular weight for readability.</li>
             <li><b>No screen reader testing across the full matrix.</b> We have not tested every page against every combination of screen reader and browser.</li>
           </ul>
@@ -153,7 +152,7 @@
           <p>Nothing on this site is the only way to reach us. Email and phone are on every page, in text, and a person answers both. If any part of this site stops you getting what you need, use them and we will give you the information directly.</p>
 
           <h2>5. Tell us</h2>
-          <p>If something here does not work for you, email <a class="link" data-ul="email" href="#">email</a> with the page and what happened. We will reply within five business days, tell you honestly whether we can fix it, and give you the content another way in the meantime.</p>
+          <p>If something here does not work for you, email <a class="link" data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a> with the page and what happened. We will reply within five business days, tell you honestly whether we can fix it, and give you the content another way in the meantime.</p>
 
           <h2>6. This statement</h2>
           <p>Self-assessed, no independent audit, reviewed when the site changes materially. The date at the top of this page is the date of the current assessment.</p>
@@ -164,9 +163,9 @@
         <div class="callout veil">
           <p class="label">Questions about this page</p>
           <p>Write to Clarence and you will get an answer from a person, not a template.</p>
-          <div class="cta-row"><a class="btn" data-ul="email" data-ul-keep href="#"><span>Email Clarence</span></a></div>
+          <div class="cta-row"><a class="btn" data-ul="email" data-ul-keep href="mailto:Clarence.allouard@uncommunlogic.com"><span>Email Clarence</span></a></div>
         </div>
-        <p class="small note-under">Related: <a class="link" href="/legal/terms/">Terms of use</a>, <a class="link" href="/contact/">Contact</a></p>
+        <p class="small note-under">Related: <a class="link" href="/legal/terms/">Terms of use</a>, <a class="link" href="/talk/">Contact</a></p>
       </div>
     </div>
   </div>
@@ -192,10 +191,9 @@
       <div>
         <h2>The work</h2>
         <ul>
-          <li><a href="/solutions/">Automation catalogue</a></li>
-          <li><a href="/websites/">Websites and web apps</a></li>
+          <li><a href="/solutions/">What we build</a></li>
           <li><a href="/how-we-work/">How we work</a></li>
-          <li><a href="/technology/">Technology</a></li>
+          <li><a href="/talk/">Send a brief</a></li>
         </ul>
       </div>
       <div>
@@ -203,15 +201,15 @@
         <ul>
           <li><a href="/who-we-are/">Who we are</a></li>
           <li><a href="/notes/">Notes</a></li>
-          <li><a href="/book/">Book the free hour</a></li>
-          <li><a href="/contact/">Contact</a></li>
+          <li><a href="/talk/">Book the free hour</a></li>
+          <li><a href="/talk/">Contact</a></li>
         </ul>
       </div>
       <div>
         <h2>Contact</h2>
         <ul>
-          <li><a data-ul="email" href="#">email</a></li>
-          <li><a data-ul="phone" href="#">phone</a></li>
+          <li><a data-ul="email" href="mailto:Clarence.allouard@uncommunlogic.com">Clarence.allouard@uncommunlogic.com</a></li>
+          <li><a data-ul="phone" href="tel:+61456810652">+61 456 810 652</a></li>
         </ul>
         <h2 class="footer-legal-head">Legal</h2>
         <ul>
